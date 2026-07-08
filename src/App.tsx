@@ -7,6 +7,8 @@ import { SetupScreen } from "./components/SetupScreen";
 import { demoPlanData, type PlanData } from "./data/planData";
 import { explainRecommendation } from "./domain/coachNarrator";
 import { buildAdaptiveWeek } from "./domain/trainingEngine";
+import { applyGarminDailyImport, demoGarminDailyImport } from "./integrations/garmin/garminImport";
+import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
 
 export default function App() {
@@ -56,6 +58,28 @@ export default function App() {
     setSaveStatus("Reset to demo data");
   }
 
+  async function importDemoGarmin() {
+    const nextPlanData = applyGarminDailyImport(planData, demoGarminDailyImport);
+    await savePlanData(nextPlanData);
+    setSaveStatus("Imported demo Garmin metrics");
+  }
+
+  async function refreshLiveWeather(nextPlanData: PlanData) {
+    try {
+      const weather = await fetchOpenMeteoWeather(nextPlanData.location);
+      await savePlanData({
+        ...nextPlanData,
+        planInput: {
+          ...nextPlanData.planInput,
+          weather,
+        },
+      });
+      setSaveStatus(`Weather refreshed for ${nextPlanData.location.name}`);
+    } catch (error) {
+      setSaveStatus(error instanceof Error ? error.message : "Weather refresh failed");
+    }
+  }
+
   return (
     <AppShell activeScreen={activeScreen} onScreenChange={setActiveScreen}>
       {activeScreen === "home" && (
@@ -78,6 +102,8 @@ export default function App() {
           storageMode={repository.mode}
           onReset={resetPlanData}
           onSave={savePlanData}
+          onImportDemoGarmin={importDemoGarmin}
+          onRefreshLiveWeather={refreshLiveWeather}
         />
       )}
     </AppShell>
