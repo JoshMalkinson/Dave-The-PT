@@ -40,9 +40,9 @@ p {
 
 .app-frame {
   min-height: 100vh;
-  padding: 20px 20px 92px;
+  padding: 20px;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   gap: 20px;
 }
 
@@ -418,12 +418,10 @@ p {
 }
 
 .bottom-nav {
-  position: fixed;
+  position: static;
   z-index: 20;
-  left: 50%;
-  bottom: 18px;
   width: min(560px, calc(100% - 28px));
-  transform: translateX(-50%);
+  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
@@ -524,10 +522,6 @@ p {
 
   .day-card {
     min-height: 0;
-  }
-
-  .bottom-nav {
-    bottom: 10px;
   }
 
   .nav-button {
