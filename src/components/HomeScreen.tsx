@@ -1,11 +1,13 @@
 import { Clock, CloudSun, Flag, Gauge, Route } from "lucide-react";
 import type { AthleteState, DailyRecommendation, RaceGoal } from "../domain/types";
+import type { PlanRepositoryMode } from "../storage/planRepository";
 
 interface HomeScreenProps {
   athlete: AthleteState;
   dailyRecommendation: DailyRecommendation;
   explanation: string;
   race: RaceGoal;
+  storageMode: PlanRepositoryMode;
 }
 
 function minutesLabel(minutes: number) {
@@ -21,6 +23,7 @@ export function HomeScreen({
   dailyRecommendation,
   explanation,
   race,
+  storageMode,
 }: HomeScreenProps) {
   return (
     <div className="screen-stack">
@@ -29,6 +32,7 @@ export function HomeScreen({
           <p className="eyebrow">Today's Mission</p>
           <h1 id="mission-heading">Today's Mission</h1>
           <h2 className="mission-title">{dailyRecommendation.workout.title}</h2>
+          <p className="storage-status">{storageMode === "supabase" ? "Supabase ready" : "Local demo storage"}</p>
           <p className="hero-summary">
             {minutesLabel(dailyRecommendation.workout.durationMinutes)} at{" "}
             {dailyRecommendation.scheduledWindow}. {dailyRecommendation.reasons[0]}
@@ -53,7 +57,7 @@ export function HomeScreen({
         </article>
         <article className="metric-tile">
           <Flag size={20} aria-hidden="true" />
-          <span>{race.distance}</span>
+          <span>{race.name}</span>
           <strong>{dailyRecommendation.daysUntilRace} days</strong>
         </article>
         <article className="metric-tile">

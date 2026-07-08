@@ -29,4 +29,19 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Home" }));
     expect(screen.getByRole("heading", { name: "Today's Mission" })).toBeInTheDocument();
   });
+
+  it("saves setup edits and recalculates the visible readiness", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+    await user.clear(screen.getByLabelText("Race name"));
+    await user.type(screen.getByLabelText("Race name"), "Joburg 10K");
+    await user.click(screen.getByRole("button", { name: "Low HRV" }));
+    await user.click(screen.getByRole("button", { name: "Save setup" }));
+    await user.click(screen.getByRole("button", { name: "Home" }));
+
+    expect(screen.getByText("Joburg 10K")).toBeInTheDocument();
+    expect(screen.getByText("low")).toBeInTheDocument();
+  });
 });
