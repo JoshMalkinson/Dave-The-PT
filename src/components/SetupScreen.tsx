@@ -1,27 +1,45 @@
-import { Moon, Settings2, Watch } from "lucide-react";
-import type { AthleteState, RaceGoal, WeeklyAvailability } from "../domain/types";
+import { useEffect, useState } from "react";
+import { CloudSun, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
+import type { PlanData } from "../data/planData";
+import type { PlanRepositoryMode } from "../storage/planRepository";
 
 interface SetupScreenProps {
-  athlete: AthleteState;
-  availability: WeeklyAvailability;
-  race: RaceGoal;
-  onAthleteChange: (athlete: AthleteState) => void;
+  planData: PlanData;
+  saveStatus: string;
+  storageMode: PlanRepositoryMode;
+  onReset: () => Promise<void>;
+  onImportDemoGarmin: () => Promise<void>;
+  onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
+  onSave: (planData: PlanData) => Promise<void>;
 }
 
 export function SetupScreen({
-  athlete,
-  availability,
-  race,
-  onAthleteChange,
+  planData,
+  saveStatus,
+  storageMode,
+  onImportDemoGarmin,
+  onReset,
+  onRefreshLiveWeather,
+  onSave,
 }: SetupScreenProps) {
+  const [draft, setDraft] = useState(planData);
+
+  useEffect(() => {
+    setDraft(planData);
+  }, [planData]);
+
+  const athlete = draft.planInput.athlete;
+  const race = draft.planInput.race;
+  const availability = draft.planInput.availability;
+
   return (
     <div className="screen-stack">
       <section className="screen-header">
         <p className="eyebrow">Athlete Setup</p>
         <h1>Setup</h1>
         <p>
-          Tune the simulated Garmin state and watch the engine adapt the week.
-          Live accounts and OAuth belong in the next release.
+          Tune the Garmin-style state and goal race, then save it to{" "}
+          {storageMode === "supabase" ? "Supabase" : "local demo storage"}.
         </p>
       </section>
 
@@ -40,9 +58,15 @@ export function SetupScreen({
               max="100"
               value={athlete.recoveryScore}
               onChange={(event) =>
-                onAthleteChange({
-                  ...athlete,
-                  recoveryScore: Number(event.target.value),
+                setDraft({
+                  ...draft,
+                  planInput: {
+                    ...draft.planInput,
+                    athlete: {
+                      ...athlete,
+                      recoveryScore: Number(event.target.value),
+                    },
+                  },
                 })
               }
             />
@@ -57,13 +81,47 @@ export function SetupScreen({
               step="0.1"
               value={athlete.sleepHours}
               onChange={(event) =>
-                onAthleteChange({
-                  ...athlete,
-                  sleepHours: Number(event.target.value),
+                setDraft({
+                  ...draft,
+                  planInput: {
+                    ...draft.planInput,
+                    athlete: {
+                      ...athlete,
+                      sleepHours: Number(event.target.value),
+                    },
+                  },
                 })
               }
             />
           </label>
+          <div className="segmented-control" aria-label="HRV status">
+            {(["low", "balanced", "high"] as const).map((status) => (
+              <button
+                key={status}
+                type="button"
+                className={athlete.hrvStatus === status ? "selected" : ""}
+                aria-pressed={athlete.hrvStatus === status}
+                onClick={() =>
+                  setDraft({
+                    ...draft,
+                    planInput: {
+                      ...draft.planInput,
+                      athlete: {
+                        ...athlete,
+                        hrvStatus: status,
+                      },
+                    },
+                  })
+                }
+              >
+                {status === "low" ? "Low HRV" : status}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="secondary-action full-width-action" onClick={onImportDemoGarmin}>
+            <Watch size={18} aria-hidden="true" />
+            Import demo Garmin
+          </button>
         </article>
 
         <article className="content-panel">
@@ -71,11 +129,40 @@ export function SetupScreen({
             <Settings2 size={20} aria-hidden="true" />
             <h2>Goal Race</h2>
           </div>
-          <dl className="detail-list">
-            <div>
-              <dt>Race</dt>
-              <dd>{race.name}</dd>
-            </div>
+          <label className="text-control">
+            <span>Race name</span>
+            <input
+              aria-label="Race name"
+              value={race.name}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  planInput: {
+                    ...draft.planInput,
+                    race: { ...race, name: event.target.value },
+                  },
+                })
+              }
+            />
+          </label>
+          <label className="text-control">
+            <span>Race date</span>
+            <input
+              aria-label="Race date"
+              type="date"
+              value={race.date}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  planInput: {
+                    ...draft.planInput,
+                    race: { ...race, date: event.target.value },
+                  },
+                })
+              }
+            />
+          </label>
+          <dl className="detail-list compact">
             <div>
               <dt>Distance</dt>
               <dd>{race.distance}</dd>
@@ -101,6 +188,78 @@ export function SetupScreen({
             ))}
           </div>
         </article>
+
+        <article className="content-panel integration-panel">
+          <div className="section-heading">
+            <CloudSun size={20} aria-hidden="true" />
+            <h2>Weather Integration</h2>
+          </div>
+          <label className="text-control">
+            <span>Location name</span>
+            <input
+              aria-label="Location name"
+              value={draft.location.name}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  location: { ...draft.location, name: event.target.value },
+                })
+              }
+            />
+          </label>
+          <label className="text-control">
+            <span>Latitude</span>
+            <input
+              aria-label="Latitude"
+              type="number"
+              step="0.0001"
+              value={draft.location.latitude}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  location: { ...draft.location, latitude: Number(event.target.value) },
+                })
+              }
+            />
+          </label>
+          <label className="text-control">
+            <span>Longitude</span>
+            <input
+              aria-label="Longitude"
+              type="number"
+              step="0.0001"
+              value={draft.location.longitude}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  location: { ...draft.location, longitude: Number(event.target.value) },
+                })
+              }
+            />
+          </label>
+          <button
+            type="button"
+            className="secondary-action full-width-action"
+            onClick={() => onRefreshLiveWeather(draft)}
+          >
+            <CloudSun size={18} aria-hidden="true" />
+            Refresh live weather
+          </button>
+        </article>
+      </section>
+
+      <section className="action-panel">
+        <p>{saveStatus}</p>
+        <div className="action-row">
+          <button type="button" className="secondary-action" onClick={onReset}>
+            <RotateCcw size={18} aria-hidden="true" />
+            Reset demo
+          </button>
+          <button type="button" className="primary-action" onClick={() => onSave(draft)}>
+            <Save size={18} aria-hidden="true" />
+            Save setup
+          </button>
+        </div>
       </section>
     </div>
   );
