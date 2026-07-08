@@ -25,3 +25,78 @@ export interface WeatherScore {
   recommendedWindow: TrainingWindow;
   summary: string;
 }
+
+export type DayLabel =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday"
+  | "Sunday";
+
+export type WorkoutType =
+  | "easy"
+  | "recovery"
+  | "long"
+  | "tempo"
+  | "threshold"
+  | "intervals"
+  | "hills"
+  | "strength"
+  | "mobility"
+  | "rest";
+
+export type WorkoutIntensity = "rest" | "easy" | "moderate" | "hard";
+
+export interface Workout {
+  id: string;
+  type: WorkoutType;
+  title: string;
+  day: DayLabel;
+  durationMinutes: number;
+  intensity: WorkoutIntensity;
+}
+
+export interface AthleteState {
+  name: string;
+  recoveryScore: number;
+  sleepHours: number;
+  hrvStatus: "low" | "balanced" | "high";
+  hardWorkoutsLastFiveDays: number;
+}
+
+export interface RaceGoal {
+  name: string;
+  distance: string;
+  date: string;
+  priority: "A" | "B" | "C";
+}
+
+export type WeeklyAvailability = Record<DayLabel, TrainingWindow[]>;
+
+export interface TrainingPlanInput {
+  athlete: AthleteState;
+  race: RaceGoal;
+  availability: WeeklyAvailability;
+  workouts: Workout[];
+  weather: WeatherDay[];
+}
+
+export interface DailyRecommendation {
+  date: string;
+  label: DayLabel;
+  workout: Workout;
+  originalWorkout?: Workout;
+  scheduledWindow: TrainingWindow;
+  weather: WeatherDay;
+  weatherScore: WeatherScore;
+  readinessScore: number;
+  daysUntilRace: number;
+  reasons: string[];
+}
+
+export interface AdaptiveWeek {
+  days: DailyRecommendation[];
+  generatedAt: string;
+}
