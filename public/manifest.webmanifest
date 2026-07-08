@@ -1,9 +1,11 @@
 {
-  "name": "Adaptive Coach",
-  "short_name": "Coach",
-  "description": "A weather-aware adaptive running coach.",
+  "name": "Dave The PT",
+  "short_name": "Dave PT",
+  "description": "A Garmin and weather-aware adaptive running coach.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f6f5ef",
   "theme_color": "#10231f",
   "icons": [

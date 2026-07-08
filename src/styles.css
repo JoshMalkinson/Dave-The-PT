@@ -40,7 +40,8 @@ p {
 
 .app-frame {
   min-height: 100vh;
-  padding: 20px;
+  padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 20px;
@@ -608,7 +609,8 @@ p {
   }
 
   .app-frame {
-    padding: 14px 14px 92px;
+    padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+      calc(92px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
   }
 
   .topbar {
@@ -654,6 +656,10 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .auth-status-row {
+    grid-template-columns: 1fr;
+  }
+
   .metric-tile,
   .progress-card {
     min-height: 112px;
@@ -675,5 +681,13 @@ p {
 
   .nav-button {
     min-height: 50px;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: max(14px, env(safe-area-inset-left));
+    width: auto;
   }
 }
