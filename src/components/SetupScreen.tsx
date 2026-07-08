@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
+import { CloudSun, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
 import type { PlanData } from "../data/planData";
 import type { PlanRepositoryMode } from "../storage/planRepository";
 
@@ -8,6 +8,8 @@ interface SetupScreenProps {
   saveStatus: string;
   storageMode: PlanRepositoryMode;
   onReset: () => Promise<void>;
+  onImportDemoGarmin: () => Promise<void>;
+  onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
   onSave: (planData: PlanData) => Promise<void>;
 }
 
@@ -15,7 +17,9 @@ export function SetupScreen({
   planData,
   saveStatus,
   storageMode,
+  onImportDemoGarmin,
   onReset,
+  onRefreshLiveWeather,
   onSave,
 }: SetupScreenProps) {
   const [draft, setDraft] = useState(planData);
@@ -114,6 +118,10 @@ export function SetupScreen({
               </button>
             ))}
           </div>
+          <button type="button" className="secondary-action full-width-action" onClick={onImportDemoGarmin}>
+            <Watch size={18} aria-hidden="true" />
+            Import demo Garmin
+          </button>
         </article>
 
         <article className="content-panel">
@@ -179,6 +187,64 @@ export function SetupScreen({
               </div>
             ))}
           </div>
+        </article>
+
+        <article className="content-panel integration-panel">
+          <div className="section-heading">
+            <CloudSun size={20} aria-hidden="true" />
+            <h2>Weather Integration</h2>
+          </div>
+          <label className="text-control">
+            <span>Location name</span>
+            <input
+              aria-label="Location name"
+              value={draft.location.name}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  location: { ...draft.location, name: event.target.value },
+                })
+              }
+            />
+          </label>
+          <label className="text-control">
+            <span>Latitude</span>
+            <input
+              aria-label="Latitude"
+              type="number"
+              step="0.0001"
+              value={draft.location.latitude}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  location: { ...draft.location, latitude: Number(event.target.value) },
+                })
+              }
+            />
+          </label>
+          <label className="text-control">
+            <span>Longitude</span>
+            <input
+              aria-label="Longitude"
+              type="number"
+              step="0.0001"
+              value={draft.location.longitude}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  location: { ...draft.location, longitude: Number(event.target.value) },
+                })
+              }
+            />
+          </label>
+          <button
+            type="button"
+            className="secondary-action full-width-action"
+            onClick={() => onRefreshLiveWeather(draft)}
+          >
+            <CloudSun size={18} aria-hidden="true" />
+            Refresh live weather
+          </button>
         </article>
       </section>
 

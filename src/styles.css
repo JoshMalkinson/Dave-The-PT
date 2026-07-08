@@ -368,6 +368,10 @@ p {
   grid-template-columns: 1.1fr 0.9fr 1fr;
 }
 
+.integration-panel {
+  grid-column: 1 / -1;
+}
+
 .control-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -522,6 +526,11 @@ p {
   padding: 0 16px;
   color: #29433a;
   background: #e3ece7;
+}
+
+.full-width-action {
+  width: 100%;
+  margin-top: 18px;
 }
 
 .bottom-nav {
