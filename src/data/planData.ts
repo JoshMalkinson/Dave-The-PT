@@ -2,6 +2,8 @@ import { demoPlanInput, progressMetrics, trendData } from "./seedData";
 import type { ProgressMetric, TrendPoint } from "./seedData";
 import type { TrainingPlanInput } from "../domain/types";
 
+export type { ProgressMetric, TrendPoint } from "./seedData";
+
 export interface PlanData {
   location: TrainingLocation;
   planInput: TrainingPlanInput;
