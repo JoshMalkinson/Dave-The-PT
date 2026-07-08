@@ -1,4 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  createSupabaseAuthClient,
+  type AuthSessionState,
+  type SupabaseAuthClient,
+} from "./auth/supabaseAuthClient";
 import { AppShell, type Screen } from "./components/AppShell";
 import { HomeScreen } from "./components/HomeScreen";
 import { PlanScreen } from "./components/PlanScreen";
@@ -10,18 +15,37 @@ import { buildAdaptiveWeek } from "./domain/trainingEngine";
 import { applyGarminDailyImport, demoGarminDailyImport } from "./integrations/garmin/garminImport";
 import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
+import { createSupabaseBrowserClient } from "./storage/supabaseClient";
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>("home");
   const [planData, setPlanData] = useState<PlanData>(demoPlanData);
   const [saveStatus, setSaveStatus] = useState("Local demo data ready");
+  const [authSession, setAuthSession] = useState<AuthSessionState | null>(null);
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseClient = useMemo(
+    () =>
+      supabaseUrl && supabaseAnonKey
+        ? createSupabaseBrowserClient(supabaseUrl, supabaseAnonKey)
+        : null,
+    [supabaseAnonKey, supabaseUrl],
+  );
+  const authClient = useMemo<SupabaseAuthClient | null>(
+    () => (supabaseClient ? createSupabaseAuthClient(supabaseClient) : null),
+    [supabaseClient],
+  );
   const repository = useMemo(
     () =>
-      createPlanRepository({
-        VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-        VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
-      }),
-    [],
+      createPlanRepository(
+        {
+          VITE_SUPABASE_URL: supabaseUrl,
+          VITE_SUPABASE_ANON_KEY: supabaseAnonKey,
+        },
+        window.localStorage,
+        supabaseClient ?? undefined,
+      ),
+    [supabaseAnonKey, supabaseClient, supabaseUrl],
   );
 
   useEffect(() => {
@@ -36,6 +60,31 @@ export default function App() {
       isMounted = false;
     };
   }, [repository]);
+
+  useEffect(() => {
+    if (!authClient) {
+      setAuthSession(null);
+      return;
+    }
+
+    let isMounted = true;
+
+    authClient.getSessionState().then((state) => {
+      if (isMounted) {
+        setAuthSession(state);
+      }
+    });
+
+    const unsubscribe = authClient.onAuthStateChange((state) => {
+      setAuthSession(state);
+      repository.load().then(setPlanData);
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [authClient, repository]);
 
   const adaptiveWeek = useMemo(() => buildAdaptiveWeek(planData.planInput), [planData]);
   const today =
@@ -80,6 +129,25 @@ export default function App() {
     }
   }
 
+  async function sendMagicLink(email: string) {
+    if (!authClient) {
+      return;
+    }
+
+    await authClient.sendMagicLink(email, window.location.href);
+    setSaveStatus("Magic link requested");
+  }
+
+  async function signOut() {
+    if (!authClient) {
+      return;
+    }
+
+    await authClient.signOut();
+    setAuthSession({ user: null, email: null, isSignedIn: false });
+    setSaveStatus("Signed out of Supabase");
+  }
+
   return (
     <AppShell activeScreen={activeScreen} onScreenChange={setActiveScreen}>
       {activeScreen === "home" && (
@@ -97,6 +165,7 @@ export default function App() {
       )}
       {activeScreen === "setup" && (
         <SetupScreen
+          authSession={authSession}
           planData={planData}
           saveStatus={saveStatus}
           storageMode={repository.mode}
@@ -104,6 +173,8 @@ export default function App() {
           onSave={savePlanData}
           onImportDemoGarmin={importDemoGarmin}
           onRefreshLiveWeather={refreshLiveWeather}
+          onSendMagicLink={sendMagicLink}
+          onSignOut={signOut}
         />
       )}
     </AppShell>

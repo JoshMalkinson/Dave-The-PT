@@ -372,6 +372,29 @@ p {
   grid-column: 1 / -1;
 }
 
+.auth-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-form,
+.auth-status-row {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-status-row {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.auth-status-row p,
+.auth-status {
+  margin: 0;
+  color: #49635b;
+  font-weight: 800;
+}
+
 .control-row {
   display: grid;
   grid-template-columns: 1fr auto;
