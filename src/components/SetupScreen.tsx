@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { CloudSun, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
+import type { AuthSessionState } from "../auth/supabaseAuthClient";
 import type { PlanData } from "../data/planData";
 import type { PlanRepositoryMode } from "../storage/planRepository";
+import { AuthPanel } from "./AuthPanel";
 
 interface SetupScreenProps {
+  authSession: AuthSessionState | null;
   planData: PlanData;
   saveStatus: string;
   storageMode: PlanRepositoryMode;
@@ -11,9 +14,12 @@ interface SetupScreenProps {
   onImportDemoGarmin: () => Promise<void>;
   onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
   onSave: (planData: PlanData) => Promise<void>;
+  onSendMagicLink: (email: string) => Promise<void>;
+  onSignOut: () => Promise<void>;
 }
 
 export function SetupScreen({
+  authSession,
   planData,
   saveStatus,
   storageMode,
@@ -21,6 +27,8 @@ export function SetupScreen({
   onReset,
   onRefreshLiveWeather,
   onSave,
+  onSendMagicLink,
+  onSignOut,
 }: SetupScreenProps) {
   const [draft, setDraft] = useState(planData);
 
@@ -42,6 +50,14 @@ export function SetupScreen({
           {storageMode === "supabase" ? "Supabase" : "local demo storage"}.
         </p>
       </section>
+
+      {authSession && (
+        <AuthPanel
+          session={authSession}
+          onSendMagicLink={onSendMagicLink}
+          onSignOut={onSignOut}
+        />
+      )}
 
       <section className="settings-grid">
         <article className="content-panel">

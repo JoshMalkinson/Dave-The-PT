@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { demoPlanData, type PlanData } from "../data/planData";
 import type {
   DayLabel,
@@ -15,6 +15,11 @@ interface AthleteSettingsRow {
   sleep_hours: number;
   hrv_status: string;
   hard_workouts_last_five_days: number;
+}
+
+interface ProfileRow {
+  id: string;
+  display_name: string;
 }
 
 interface RaceGoalRow {
@@ -57,6 +62,7 @@ interface WeatherSnapshotRow {
 }
 
 export interface SupabasePlanRows {
+  profile: ProfileRow;
   athleteSettings: AthleteSettingsRow;
   raceGoal: RaceGoalRow;
   availabilityWindows: AvailabilityWindowRow[];
@@ -69,6 +75,10 @@ export function mapPlanDataToSupabaseRows(
   userId: string,
 ): SupabasePlanRows {
   return {
+    profile: {
+      id: userId,
+      display_name: planData.planInput.athlete.name,
+    },
     athleteSettings: {
       user_id: userId,
       recovery_score: planData.planInput.athlete.recoveryScore,
@@ -161,7 +171,7 @@ export function mapSupabaseRowsToPlanData(rows: SupabasePlanRows): PlanData {
     ...demoPlanData,
     planInput: {
       athlete: {
-        name: demoPlanData.planInput.athlete.name,
+        name: rows.profile.display_name,
         recoveryScore: rows.athleteSettings.recovery_score,
         sleepHours: rows.athleteSettings.sleep_hours,
         hrvStatus: rows.athleteSettings.hrv_status as "low" | "balanced" | "high",
@@ -183,31 +193,120 @@ export function mapSupabaseRowsToPlanData(rows: SupabasePlanRows): PlanData {
 export class SupabasePlanRepository implements PlanRepository {
   mode = "supabase" as const;
 
-  private readonly client: SupabaseClient;
-
-  constructor(url: string, anonKey: string) {
-    this.client = createClient(url, anonKey);
-  }
+  constructor(private readonly client: SupabaseClient) {}
 
   async load(): Promise<PlanData> {
-    const { data } = await this.client.auth.getUser();
-    if (!data.user) {
+    const userId = await this.getUserId();
+    if (!userId) {
       return demoPlanData;
     }
 
-    return demoPlanData;
+    const [profile, athleteSettings, raceGoal, availabilityWindows, plannedWorkouts, weatherSnapshots] =
+      await Promise.all([
+        this.readSingle<ProfileRow>("profiles", userId, "id"),
+        this.readSingle<AthleteSettingsRow>("athlete_settings", userId),
+        this.readRaceGoal(userId),
+        this.readCollection<AvailabilityWindowRow>("availability_windows", userId),
+        this.readCollection<PlannedWorkoutRow>("planned_workouts", userId),
+        this.readCollection<WeatherSnapshotRow>("weather_snapshots", userId),
+      ]);
+
+    if (!profile || !athleteSettings || !raceGoal) {
+      return demoPlanData;
+    }
+
+    return mapSupabaseRowsToPlanData({
+      profile,
+      athleteSettings,
+      raceGoal,
+      availabilityWindows,
+      plannedWorkouts,
+      weatherSnapshots,
+    });
   }
 
   async save(planData: PlanData): Promise<void> {
-    const { data } = await this.client.auth.getUser();
-    if (!data.user) {
+    const userId = await this.getUserId();
+    if (!userId) {
       return;
     }
 
-    mapPlanDataToSupabaseRows(planData, data.user.id);
+    const rows = mapPlanDataToSupabaseRows(planData, userId);
+
+    await this.upsertRow("profiles", rows.profile);
+    await this.upsertRow("athlete_settings", rows.athleteSettings);
+    await this.replaceRows("race_goals", userId, [rows.raceGoal]);
+    await this.replaceRows("availability_windows", userId, rows.availabilityWindows);
+    await this.replaceRows("planned_workouts", userId, rows.plannedWorkouts);
+    await this.replaceRows("weather_snapshots", userId, rows.weatherSnapshots);
   }
 
   async reset(): Promise<void> {
     await this.save(demoPlanData);
+  }
+
+  private async getUserId(): Promise<string | null> {
+    const { data, error } = await this.client.auth.getUser();
+    this.throwIfError(error);
+    return data.user?.id ?? null;
+  }
+
+  private async readSingle<Row>(
+    tableName: string,
+    userId: string,
+    userIdColumn = "user_id",
+  ): Promise<Row | null> {
+    const { data, error } = await this.client
+      .from(tableName)
+      .select("*")
+      .eq(userIdColumn, userId)
+      .maybeSingle();
+    this.throwIfError(error);
+    return (data as Row | null) ?? null;
+  }
+
+  private async readRaceGoal(userId: string): Promise<RaceGoalRow | null> {
+    const { data, error } = await this.client
+      .from("race_goals")
+      .select("*")
+      .eq("user_id", userId)
+      .order("race_date", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    this.throwIfError(error);
+    return (data as RaceGoalRow | null) ?? null;
+  }
+
+  private async readCollection<Row>(tableName: string, userId: string): Promise<Row[]> {
+    const { data, error } = await this.client.from(tableName).select("*").eq("user_id", userId);
+    this.throwIfError(error);
+    return (data as Row[] | null) ?? [];
+  }
+
+  private async upsertRow(tableName: string, row: object): Promise<void> {
+    const { error } = await this.client.from(tableName).upsert(row);
+    this.throwIfError(error);
+  }
+
+  private async replaceRows(
+    tableName: string,
+    userId: string,
+    rows: object[],
+  ): Promise<void> {
+    const { error: deleteError } = await this.client.from(tableName).delete().eq("user_id", userId);
+    this.throwIfError(deleteError);
+
+    if (rows.length === 0) {
+      return;
+    }
+
+    const { error: insertError } = await this.client.from(tableName).insert(rows);
+    this.throwIfError(insertError);
+  }
+
+  private throwIfError(error: { message: string } | null): void {
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 }
