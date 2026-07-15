@@ -79,6 +79,33 @@ describe("App", () => {
             vo2Max: 53.2,
             restingHeartRate: 47,
           },
+          reportData: {
+            windowDays: 14,
+            days: [
+              {
+                date: "2026-07-15",
+                sleepSeconds: 28_800,
+                hrvScore: 84,
+                restingHeartRate: 47,
+                stressAverage: 30,
+                bodyBatteryMin: 20,
+                bodyBatteryMax: 90,
+                steps: 12_000,
+              },
+            ],
+            activities: [
+              {
+                id: "activity-1",
+                date: "2026-07-15",
+                name: "Morning Run",
+                type: "running",
+                distanceMeters: 8600,
+                durationSeconds: 2820,
+                averageHeartRate: 145,
+                trainingEffect: 3.1,
+              },
+            ],
+          },
         }),
       ],
       "garmin-bridge-export.json",
@@ -92,6 +119,10 @@ describe("App", () => {
 
     expect(screen.getByLabelText("Readiness 83%")).toBeInTheDocument();
     expect(screen.getByText("high")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Progress" }));
+    expect(screen.getByRole("heading", { name: "Garmin Report" })).toBeInTheDocument();
+    expect(screen.getByText("Morning Run")).toBeInTheDocument();
   });
 
   it("refreshes weather from Open-Meteo and updates the plan", async () => {

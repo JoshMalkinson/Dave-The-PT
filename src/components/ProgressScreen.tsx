@@ -1,13 +1,16 @@
 import { BarChart3 } from "lucide-react";
 import type { ProgressMetric, TrendPoint } from "../data/seedData";
+import { buildGarminReportMetrics, type GarminReportData } from "../integrations/garmin/garminReport";
 
 interface ProgressScreenProps {
+  garminReport?: GarminReportData;
   metrics: ProgressMetric[];
   trendData: TrendPoint[];
 }
 
-export function ProgressScreen({ metrics, trendData }: ProgressScreenProps) {
+export function ProgressScreen({ garminReport, metrics, trendData }: ProgressScreenProps) {
   const maxLoad = Math.max(...trendData.map((point) => point.load));
+  const garminMetrics = garminReport ? buildGarminReportMetrics(garminReport) : [];
 
   return (
     <div className="screen-stack">
@@ -47,6 +50,37 @@ export function ProgressScreen({ metrics, trendData }: ProgressScreenProps) {
           ))}
         </div>
       </section>
+
+      {garminReport && (
+        <section className="content-panel">
+          <div className="section-heading">
+            <BarChart3 size={20} aria-hidden="true" />
+            <h2>Garmin Report</h2>
+          </div>
+          <div className="progress-grid compact-report-grid" aria-label="Garmin report metrics">
+            {garminMetrics.map((metric) => (
+              <article className={`progress-card ${metric.tone}`} key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <p>{metric.change}</p>
+              </article>
+            ))}
+          </div>
+          <div className="activity-list" aria-label="Garmin activity summaries">
+            {garminReport.activities.slice(0, 8).map((activity) => (
+              <div key={activity.id}>
+                <span>{activity.date}</span>
+                <strong>{activity.name}</strong>
+                <small>
+                  {(activity.distanceMeters / 1000).toFixed(1)} km ·{" "}
+                  {(activity.durationSeconds / 60).toFixed(0)} min · TE{" "}
+                  {activity.trainingEffect.toFixed(1)}
+                </small>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

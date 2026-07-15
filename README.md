@@ -56,4 +56,4 @@ npm audit --audit-level=moderate
 
 ## Garmin Bridge
 
-While Garmin developer approval is pending, use the local bridge in `tools/garmin_bridge_export.py` to generate `garmin-bridge-export.json` from a project-owned Garmin account. See `docs/garmin-bridge.md`.
+While Garmin developer approval is pending, use the local bridge in `tools/garmin_bridge_export.py` to generate `garmin-bridge-export.json` from a project-owned Garmin account. Use `--days 14` or another bounded window for richer Progress reporting. See `docs/garmin-bridge.md`.

@@ -12,7 +12,7 @@ import { SetupScreen } from "./components/SetupScreen";
 import { demoPlanData, type PlanData } from "./data/planData";
 import { explainRecommendation } from "./domain/coachNarrator";
 import { buildAdaptiveWeek } from "./domain/trainingEngine";
-import { parseGarminBridgeImportJson } from "./integrations/garmin/garminBridgeImport";
+import { parseGarminBridgeExportJson } from "./integrations/garmin/garminBridgeImport";
 import { applyGarminDailyImport, demoGarminDailyImport } from "./integrations/garmin/garminImport";
 import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
@@ -116,8 +116,11 @@ export default function App() {
 
   async function importGarminBridgeFile(file: File) {
     try {
-      const dailyImport = parseGarminBridgeImportJson(await file.text());
-      const nextPlanData = applyGarminDailyImport(planData, dailyImport);
+      const bridgeExport = parseGarminBridgeExportJson(await file.text());
+      const nextPlanData = {
+        ...applyGarminDailyImport(planData, bridgeExport.dailyImport),
+        garminReport: bridgeExport.reportData,
+      };
       await savePlanData(nextPlanData);
       setSaveStatus(`Imported Garmin bridge file ${file.name}`);
     } catch (error) {
@@ -173,7 +176,11 @@ export default function App() {
       )}
       {activeScreen === "plan" && <PlanScreen week={adaptiveWeek} />}
       {activeScreen === "progress" && (
-        <ProgressScreen metrics={planData.progressMetrics} trendData={planData.trendData} />
+        <ProgressScreen
+          garminReport={planData.garminReport}
+          metrics={planData.progressMetrics}
+          trendData={planData.trendData}
+        />
       )}
       {activeScreen === "setup" && (
         <SetupScreen

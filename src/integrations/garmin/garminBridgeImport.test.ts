@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseGarminBridgeImportJson } from "./garminBridgeImport";
+import {
+  parseGarminBridgeExportJson,
+  parseGarminBridgeImportJson,
+} from "./garminBridgeImport";
 
 const validDailyImport = {
   label: "2026-07-15",
@@ -25,6 +28,47 @@ describe("parseGarminBridgeImportJson", () => {
     );
 
     expect(parsed).toEqual(validDailyImport);
+  });
+
+  it("parses richer reporting data from a bridge envelope", () => {
+    const parsed = parseGarminBridgeExportJson(
+      JSON.stringify({
+        schemaVersion: 2,
+        source: "python-garminconnect",
+        dailyImport: validDailyImport,
+        reportData: {
+          windowDays: 14,
+          days: [
+            {
+              date: "2026-07-15",
+              sleepSeconds: 27_000,
+              hrvScore: 76,
+              restingHeartRate: 49,
+              stressAverage: 33,
+              bodyBatteryMin: 22,
+              bodyBatteryMax: 88,
+              steps: 10_250,
+            },
+          ],
+          activities: [
+            {
+              id: "123",
+              date: "2026-07-14",
+              name: "Morning Run",
+              type: "running",
+              distanceMeters: 8200,
+              durationSeconds: 2700,
+              averageHeartRate: 148,
+              trainingEffect: 3.2,
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(parsed.reportData?.windowDays).toBe(14);
+    expect(parsed.reportData?.days[0].steps).toBe(10_250);
+    expect(parsed.reportData?.activities[0].distanceMeters).toBe(8200);
   });
 
   it("parses a raw GarminDailyImport payload", () => {

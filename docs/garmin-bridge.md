@@ -21,7 +21,7 @@ Set the email in your shell. You can set the password too, but the safer path is
 
 ```bash
 $env:GARMIN_EMAIL="you@example.com"
-python tools/garmin_bridge_export.py --date 2026-07-15 --output garmin-bridge-export.json
+python tools/garmin_bridge_export.py --date 2026-07-15 --days 14 --output garmin-bridge-export.json
 ```
 
 The script may prompt for password and MFA. It stores Garmin tokens in `~/.garminconnect` by default, which is outside the repo.
@@ -33,7 +33,11 @@ The script may prompt for password and MFA. It stores Garmin tokens in `~/.garmi
 3. Use **Import Garmin bridge**.
 4. Select `garmin-bridge-export.json`.
 
-The app validates the JSON and maps it through the same `GarminDailyImport` contract that the official Garmin API sync will use later.
+The app validates the JSON and maps it through the same `GarminDailyImport` contract that the official Garmin API sync will use later. Schema v2 exports also include `reportData` with:
+
+- Daily sleep, HRV, resting HR, stress, body battery, and steps for the selected window.
+- Activity summaries with name, type, distance, duration, heart rate, and training effect.
+- A Progress screen Garmin Report section for distance, training time, sleep, HRV, resting HR, stress, and recent activity rows.
 
 ## Official Integration Target
 
