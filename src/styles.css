@@ -445,7 +445,8 @@ p {
 
 .segmented-control button,
 .primary-action,
-.secondary-action {
+.secondary-action,
+.file-action {
   min-height: 42px;
   border: 0;
   border-radius: 6px;
@@ -550,6 +551,20 @@ p {
   padding: 0 16px;
   color: #29433a;
   background: #e3ece7;
+}
+
+.file-action {
+  padding: 0 16px;
+  color: #29433a;
+  background: #e3ece7;
+}
+
+.file-action input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .full-width-action {

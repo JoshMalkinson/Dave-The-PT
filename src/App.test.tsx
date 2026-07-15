@@ -61,6 +61,39 @@ describe("App", () => {
     expect(screen.getByLabelText("Readiness 76%")).toBeInTheDocument();
   });
 
+  it("imports Garmin bridge JSON into the dashboard", async () => {
+    const user = userEvent.setup();
+    const bridgeFile = new File(
+      [
+        JSON.stringify({
+          schemaVersion: 1,
+          source: "python-garminconnect",
+          dailyImport: {
+            label: "Bridge",
+            recoveryScore: 83,
+            sleepSeconds: 28_800,
+            hrvStatus: "high",
+            hrvScore: 84,
+            hardWorkoutsLastFiveDays: 0,
+            weeklyLoad: 430,
+            vo2Max: 53.2,
+            restingHeartRate: 47,
+          },
+        }),
+      ],
+      "garmin-bridge-export.json",
+      { type: "application/json" },
+    );
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+    await user.upload(screen.getByLabelText("Garmin bridge JSON"), bridgeFile);
+    await user.click(screen.getByRole("button", { name: "Home" }));
+
+    expect(screen.getByLabelText("Readiness 83%")).toBeInTheDocument();
+    expect(screen.getByText("high")).toBeInTheDocument();
+  });
+
   it("refreshes weather from Open-Meteo and updates the plan", async () => {
     const user = userEvent.setup();
     vi.stubGlobal(
