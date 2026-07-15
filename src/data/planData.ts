@@ -1,6 +1,7 @@
 import { demoPlanInput, progressMetrics, trendData } from "./seedData";
 import type { ProgressMetric, TrendPoint } from "./seedData";
 import type { TrainingPlanInput } from "../domain/types";
+import type { GarminReportData } from "../integrations/garmin/garminReport";
 
 export type { ProgressMetric, TrendPoint } from "./seedData";
 
@@ -9,6 +10,7 @@ export interface PlanData {
   planInput: TrainingPlanInput;
   progressMetrics: ProgressMetric[];
   trendData: TrendPoint[];
+  garminReport?: GarminReportData;
 }
 
 export interface TrainingLocation {

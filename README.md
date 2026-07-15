@@ -8,7 +8,7 @@ Dave The PT is a mobile-friendly adaptive running coach MVP. It combines athlete
 - Local demo mode that works without any cloud credentials.
 - Supabase schema, RLS policies, auth adapter, and signed-in plan persistence.
 - Open-Meteo weather refresh for live forecasts.
-- Garmin demo import mapper while real Garmin access is approval-gated.
+- Garmin demo import mapper plus a local Garmin Connect bridge while official access is approval-gated.
 
 ## Run Locally
 
@@ -50,5 +50,10 @@ npm audit --audit-level=moderate
 1. Open Home to review today's mission and coach explanation.
 2. Open Setup and adjust recovery, sleep, HRV, goal race, or location.
 3. Import demo Garmin metrics to update readiness.
-4. Refresh live weather to recalculate weather-aware recommendations.
-5. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
+4. Import a local Garmin bridge JSON file for real Garmin-derived demo data.
+5. Refresh live weather to recalculate weather-aware recommendations.
+6. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
+
+## Garmin Bridge
+
+While Garmin developer approval is pending, use the local bridge in `tools/garmin_bridge_export.py` to generate `garmin-bridge-export.json` from a project-owned Garmin account. Use `--days 14` or another bounded window for richer Progress reporting. See `docs/garmin-bridge.md`.

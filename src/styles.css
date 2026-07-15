@@ -221,6 +221,10 @@ p {
   gap: 14px;
 }
 
+.compact-report-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .metric-tile,
 .progress-card {
   min-height: 132px;
@@ -365,6 +369,31 @@ p {
   background: linear-gradient(180deg, #f4b860, #87b38d);
 }
 
+.activity-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.activity-list div {
+  display: grid;
+  grid-template-columns: 95px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid rgba(16, 35, 31, 0.1);
+  padding-bottom: 10px;
+}
+
+.activity-list span,
+.activity-list small {
+  color: #58756b;
+  font-weight: 800;
+}
+
+.activity-list strong {
+  color: #10231f;
+}
+
 .settings-grid {
   grid-template-columns: 1.1fr 0.9fr 1fr;
 }
@@ -445,7 +474,8 @@ p {
 
 .segmented-control button,
 .primary-action,
-.secondary-action {
+.secondary-action,
+.file-action {
   min-height: 42px;
   border: 0;
   border-radius: 6px;
@@ -552,6 +582,20 @@ p {
   background: #e3ece7;
 }
 
+.file-action {
+  padding: 0 16px;
+  color: #29433a;
+  background: #e3ece7;
+}
+
+.file-action input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .full-width-action {
   width: 100%;
   margin-top: 18px;
@@ -643,6 +687,10 @@ p {
   .metric-grid,
   .progress-grid,
   .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-list div {
     grid-template-columns: 1fr;
   }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CloudSun, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
+import { CloudSun, FileUp, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
 import type { AuthSessionState } from "../auth/supabaseAuthClient";
 import type { PlanData } from "../data/planData";
 import type { PlanRepositoryMode } from "../storage/planRepository";
@@ -12,6 +12,7 @@ interface SetupScreenProps {
   storageMode: PlanRepositoryMode;
   onReset: () => Promise<void>;
   onImportDemoGarmin: () => Promise<void>;
+  onImportGarminBridgeFile: (file: File) => Promise<void>;
   onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
   onSave: (planData: PlanData) => Promise<void>;
   onSendMagicLink: (email: string) => Promise<void>;
@@ -24,6 +25,7 @@ export function SetupScreen({
   saveStatus,
   storageMode,
   onImportDemoGarmin,
+  onImportGarminBridgeFile,
   onReset,
   onRefreshLiveWeather,
   onSave,
@@ -39,6 +41,15 @@ export function SetupScreen({
   const athlete = draft.planInput.athlete;
   const race = draft.planInput.race;
   const availability = draft.planInput.availability;
+
+  async function importGarminBridgeFile(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) {
+      return;
+    }
+
+    await onImportGarminBridgeFile(file);
+  }
 
   return (
     <div className="screen-stack">
@@ -138,6 +149,19 @@ export function SetupScreen({
             <Watch size={18} aria-hidden="true" />
             Import demo Garmin
           </button>
+          <label className="file-action full-width-action">
+            <FileUp size={18} aria-hidden="true" />
+            Import Garmin bridge
+            <input
+              aria-label="Garmin bridge JSON"
+              type="file"
+              accept="application/json,.json"
+              onChange={(event) => {
+                void importGarminBridgeFile(event.target.files);
+                event.target.value = "";
+              }}
+            />
+          </label>
         </article>
 
         <article className="content-panel">
