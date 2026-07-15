@@ -58,6 +58,7 @@ def parse_args() -> argparse.Namespace:
         choices=sorted(MTB_TEMPLATES),
         help="MTB workout template to build",
     )
+    parser.add_argument("--input", help="Bridge workout JSON exported from the app")
     parser.add_argument("--date", help="Optional schedule date, YYYY-MM-DD")
     parser.add_argument("--push", action="store_true", help="Actually upload to Garmin")
     parser.add_argument(
@@ -143,6 +144,17 @@ def build_workout(template_id: str) -> Any:
     )
 
 
+def load_bridge_payload(input_path: str) -> tuple[dict[str, Any], str | None]:
+    payload = json.loads(Path(input_path).read_text(encoding="utf-8"))
+    workout_payload = payload.get("garminWorkoutPayload")
+    if not isinstance(workout_payload, dict):
+        raise ValueError("Bridge workout file must contain garminWorkoutPayload")
+    schedule_date = payload.get("scheduleDate")
+    if schedule_date is not None and not isinstance(schedule_date, str):
+        raise ValueError("Bridge workout scheduleDate must be a string")
+    return workout_payload, schedule_date
+
+
 def estimate_duration_seconds(steps: list[Any]) -> int:
     total = 0
     for step in steps:
@@ -155,8 +167,14 @@ def estimate_duration_seconds(steps: list[Any]) -> int:
 
 def main() -> int:
     args = parse_args()
-    workout = build_workout(args.workout)
-    payload = workout.to_dict()
+    if args.input:
+        payload, input_schedule_date = load_bridge_payload(args.input)
+        schedule_date = args.date or input_schedule_date
+        workout = None
+    else:
+        workout = build_workout(args.workout)
+        payload = workout.to_dict()
+        schedule_date = args.date
 
     if not args.push:
         print(json.dumps(payload, indent=2))
@@ -164,14 +182,14 @@ def main() -> int:
         return 0
 
     client = login(args.tokenstore)
-    uploaded = client.upload_cycling_workout(workout)
+    uploaded = client.upload_workout(payload) if workout is None else client.upload_cycling_workout(workout)
     print(json.dumps(uploaded, indent=2))
 
     workout_id = uploaded.get("workoutId") or uploaded.get("id")
-    if args.date and workout_id:
-        scheduled = client.schedule_workout(workout_id, args.date)
+    if schedule_date and workout_id:
+        scheduled = client.schedule_workout(workout_id, schedule_date)
         print(json.dumps(scheduled, indent=2))
-    elif args.date:
+    elif schedule_date:
         print("Uploaded workout, but no workout id was returned to schedule.")
 
     return 0

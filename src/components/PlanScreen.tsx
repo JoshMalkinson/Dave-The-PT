@@ -1,5 +1,6 @@
 import { ArrowRight, CalendarDays, CloudLightning } from "lucide-react";
 import type { AdaptiveWeek } from "../domain/types";
+import { MtbWorkoutBuilder } from "./MtbWorkoutBuilder";
 
 interface PlanScreenProps {
   week: AdaptiveWeek;
@@ -48,6 +49,8 @@ export function PlanScreen({ week }: PlanScreenProps) {
           );
         })}
       </section>
+
+      <MtbWorkoutBuilder />
     </div>
   );
 }

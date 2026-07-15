@@ -10,5 +10,6 @@ vite.config.js
 vite.config.d.ts
 .DS_Store
 garmin-bridge-export*.json
+garmin-mtb-workout*.json
 .garminconnect/
 .venv-garmin/

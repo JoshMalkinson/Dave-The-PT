@@ -14,6 +14,18 @@ To actually upload to Garmin, add `--push`:
 python tools/garmin_bridge_push_workout.py --workout mtb-hill-repeats-60 --date 2026-07-17 --push
 ```
 
+The app can also export an adjusted workout from the Plan screen. Dry-run that exact file with:
+
+```bash
+python tools/garmin_bridge_push_workout.py --input garmin-mtb-workout.json
+```
+
+Upload the adjusted app export with:
+
+```bash
+python tools/garmin_bridge_push_workout.py --input garmin-mtb-workout.json --push
+```
+
 Available MTB templates:
 
 - `mtb-endurance-75`
