@@ -1,11 +1,13 @@
 import { Clock, CloudSun, Flag, Gauge, Route } from "lucide-react";
 import type { AthleteState, DailyRecommendation, RaceGoal } from "../domain/types";
+import type { GarminInsight } from "../integrations/garmin/garminReport";
 import type { PlanRepositoryMode } from "../storage/planRepository";
 
 interface HomeScreenProps {
   athlete: AthleteState;
   dailyRecommendation: DailyRecommendation;
   explanation: string;
+  garminInsights: GarminInsight[];
   race: RaceGoal;
   storageMode: PlanRepositoryMode;
 }
@@ -22,6 +24,7 @@ export function HomeScreen({
   athlete,
   dailyRecommendation,
   explanation,
+  garminInsights,
   race,
   storageMode,
 }: HomeScreenProps) {
@@ -79,6 +82,23 @@ export function HomeScreen({
           ))}
         </div>
       </section>
+
+      {garminInsights.length > 0 && (
+        <section className="content-panel">
+          <div className="section-heading">
+            <Gauge size={20} aria-hidden="true" />
+            <h2>Garmin Insights</h2>
+          </div>
+          <div className="insight-list">
+            {garminInsights.slice(0, 3).map((insight) => (
+              <article className={`insight-card ${insight.tone}`} key={insight.title}>
+                <strong>{insight.title}</strong>
+                <p>{insight.detail}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

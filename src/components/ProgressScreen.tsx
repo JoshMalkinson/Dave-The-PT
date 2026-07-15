@@ -1,14 +1,24 @@
 import { BarChart3 } from "lucide-react";
 import type { ProgressMetric, TrendPoint } from "../data/seedData";
-import { buildGarminReportMetrics, type GarminReportData } from "../integrations/garmin/garminReport";
+import {
+  buildGarminReportMetrics,
+  type GarminInsight,
+  type GarminReportData,
+} from "../integrations/garmin/garminReport";
 
 interface ProgressScreenProps {
   garminReport?: GarminReportData;
+  garminInsights: GarminInsight[];
   metrics: ProgressMetric[];
   trendData: TrendPoint[];
 }
 
-export function ProgressScreen({ garminReport, metrics, trendData }: ProgressScreenProps) {
+export function ProgressScreen({
+  garminInsights,
+  garminReport,
+  metrics,
+  trendData,
+}: ProgressScreenProps) {
   const maxLoad = Math.max(...trendData.map((point) => point.load));
   const garminMetrics = garminReport ? buildGarminReportMetrics(garminReport) : [];
 
@@ -77,6 +87,14 @@ export function ProgressScreen({ garminReport, metrics, trendData }: ProgressScr
                   {activity.trainingEffect.toFixed(1)}
                 </small>
               </div>
+            ))}
+          </div>
+          <div className="insight-list report-insights" aria-label="Garmin coaching insights">
+            {garminInsights.map((insight) => (
+              <article className={`insight-card ${insight.tone}`} key={insight.title}>
+                <strong>{insight.title}</strong>
+                <p>{insight.detail}</p>
+              </article>
             ))}
           </div>
         </section>

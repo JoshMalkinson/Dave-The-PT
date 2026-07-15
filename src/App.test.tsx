@@ -123,6 +123,9 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Progress" }));
     expect(screen.getByRole("heading", { name: "Garmin Report" })).toBeInTheDocument();
     expect(screen.getByText("Morning Run")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Home" }));
+    expect(screen.getByRole("heading", { name: "Garmin Insights" })).toBeInTheDocument();
   });
 
   it("refreshes weather from Open-Meteo and updates the plan", async () => {

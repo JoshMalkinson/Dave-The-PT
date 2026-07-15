@@ -292,6 +292,44 @@ p {
   font-weight: 800;
 }
 
+.insight-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.insight-card {
+  border-left: 4px solid #87b38d;
+  border-radius: 6px;
+  padding: 12px 14px;
+  background: #f4f8f5;
+}
+
+.insight-card.watch {
+  border-left-color: #b76d3a;
+  background: #fff5ea;
+}
+
+.insight-card.steady {
+  border-left-color: #58756b;
+  background: #eef4f1;
+}
+
+.insight-card strong {
+  display: block;
+  color: #10231f;
+}
+
+.insight-card p {
+  margin: 6px 0 0;
+  color: #49635b;
+  line-height: 1.45;
+}
+
+.report-insights {
+  margin-top: 18px;
+}
+
 .week-list {
   display: grid;
   grid-template-columns: repeat(7, minmax(180px, 1fr));

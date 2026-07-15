@@ -14,6 +14,7 @@ import { explainRecommendation } from "./domain/coachNarrator";
 import { buildAdaptiveWeek } from "./domain/trainingEngine";
 import { parseGarminBridgeExportJson } from "./integrations/garmin/garminBridgeImport";
 import { applyGarminDailyImport, demoGarminDailyImport } from "./integrations/garmin/garminImport";
+import { buildGarminInsights } from "./integrations/garmin/garminReport";
 import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
 import { createSupabaseBrowserClient } from "./storage/supabaseClient";
@@ -88,6 +89,10 @@ export default function App() {
   }, [authClient, repository]);
 
   const adaptiveWeek = useMemo(() => buildAdaptiveWeek(planData.planInput), [planData]);
+  const garminInsights = useMemo(
+    () => (planData.garminReport ? buildGarminInsights(planData.garminReport) : []),
+    [planData.garminReport],
+  );
   const today =
     adaptiveWeek.days.find((day) => day.date === "2026-07-08") ?? adaptiveWeek.days[0];
   const explanation = explainRecommendation(today);
@@ -170,6 +175,7 @@ export default function App() {
           athlete={planData.planInput.athlete}
           dailyRecommendation={today}
           explanation={explanation}
+          garminInsights={garminInsights}
           race={planData.planInput.race}
           storageMode={repository.mode}
         />
@@ -178,6 +184,7 @@ export default function App() {
       {activeScreen === "progress" && (
         <ProgressScreen
           garminReport={planData.garminReport}
+          garminInsights={garminInsights}
           metrics={planData.progressMetrics}
           trendData={planData.trendData}
         />
