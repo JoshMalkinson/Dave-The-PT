@@ -35,7 +35,9 @@ export function HomeScreen({
           <p className="eyebrow">Today's Mission</p>
           <h1 id="mission-heading">Today's Mission</h1>
           <h2 className="mission-title">{dailyRecommendation.workout.title}</h2>
-          <p className="storage-status">{storageMode === "supabase" ? "Supabase ready" : "Local demo storage"}</p>
+          <p className="storage-status">
+            {storageMode === "supabase" ? "Supabase ready" : "Local browser storage"}
+          </p>
           <p className="hero-summary">
             {minutesLabel(dailyRecommendation.workout.durationMinutes)} at{" "}
             {dailyRecommendation.scheduledWindow}. {dailyRecommendation.reasons[0]}

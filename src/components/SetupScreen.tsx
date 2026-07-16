@@ -11,7 +11,6 @@ interface SetupScreenProps {
   saveStatus: string;
   storageMode: PlanRepositoryMode;
   onReset: () => Promise<void>;
-  onImportDemoGarmin: () => Promise<void>;
   onImportGarminBridgeFile: (file: File) => Promise<void>;
   onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
   onSave: (planData: PlanData) => Promise<void>;
@@ -24,7 +23,6 @@ export function SetupScreen({
   planData,
   saveStatus,
   storageMode,
-  onImportDemoGarmin,
   onImportGarminBridgeFile,
   onReset,
   onRefreshLiveWeather,
@@ -57,8 +55,8 @@ export function SetupScreen({
         <p className="eyebrow">Athlete Setup</p>
         <h1>Setup</h1>
         <p>
-          Tune the Garmin-style state and goal race, then save it to{" "}
-          {storageMode === "supabase" ? "Supabase" : "local demo storage"}.
+          Import Garmin bridge data, refresh live weather, and save the current setup to{" "}
+          {storageMode === "supabase" ? "Supabase" : "local browser storage"}.
         </p>
       </section>
 
@@ -145,10 +143,6 @@ export function SetupScreen({
               </button>
             ))}
           </div>
-          <button type="button" className="secondary-action full-width-action" onClick={onImportDemoGarmin}>
-            <Watch size={18} aria-hidden="true" />
-            Import demo Garmin
-          </button>
           <label className="file-action full-width-action">
             <FileUp size={18} aria-hidden="true" />
             Import Garmin bridge
@@ -293,7 +287,7 @@ export function SetupScreen({
         <div className="action-row">
           <button type="button" className="secondary-action" onClick={onReset}>
             <RotateCcw size={18} aria-hidden="true" />
-            Reset demo
+            Reset local setup
           </button>
           <button type="button" className="primary-action" onClick={() => onSave(draft)}>
             <Save size={18} aria-hidden="true" />

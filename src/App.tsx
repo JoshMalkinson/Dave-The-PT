@@ -13,7 +13,7 @@ import { demoPlanData, type PlanData } from "./data/planData";
 import { explainRecommendation } from "./domain/coachNarrator";
 import { buildAdaptiveWeek } from "./domain/trainingEngine";
 import { parseGarminBridgeExportJson } from "./integrations/garmin/garminBridgeImport";
-import { applyGarminDailyImport, demoGarminDailyImport } from "./integrations/garmin/garminImport";
+import { applyGarminDailyImport } from "./integrations/garmin/garminImport";
 import { buildGarminInsights } from "./integrations/garmin/garminReport";
 import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
@@ -22,7 +22,7 @@ import { createSupabaseBrowserClient } from "./storage/supabaseClient";
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>("home");
   const [planData, setPlanData] = useState<PlanData>(demoPlanData);
-  const [saveStatus, setSaveStatus] = useState("Local demo data ready");
+  const [saveStatus, setSaveStatus] = useState("Awaiting Garmin bridge import");
   const [authSession, setAuthSession] = useState<AuthSessionState | null>(null);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -55,6 +55,9 @@ export default function App() {
     repository.load().then((loadedPlanData) => {
       if (isMounted) {
         setPlanData(loadedPlanData);
+        if (import.meta.env.MODE !== "test") {
+          void refreshWeatherForPlanData(loadedPlanData, { persist: true });
+        }
       }
     });
 
@@ -110,13 +113,7 @@ export default function App() {
   async function resetPlanData() {
     await repository.reset();
     setPlanData(demoPlanData);
-    setSaveStatus("Reset to demo data");
-  }
-
-  async function importDemoGarmin() {
-    const nextPlanData = applyGarminDailyImport(planData, demoGarminDailyImport);
-    await savePlanData(nextPlanData);
-    setSaveStatus("Imported demo Garmin metrics");
+    setSaveStatus("Reset local setup; import Garmin bridge data to refresh metrics");
   }
 
   async function importGarminBridgeFile(file: File) {
@@ -134,15 +131,26 @@ export default function App() {
   }
 
   async function refreshLiveWeather(nextPlanData: PlanData) {
+    await refreshWeatherForPlanData(nextPlanData, { persist: true });
+  }
+
+  async function refreshWeatherForPlanData(
+    nextPlanData: PlanData,
+    options: { persist: boolean },
+  ) {
     try {
       const weather = await fetchOpenMeteoWeather(nextPlanData.location);
-      await savePlanData({
+      const planDataWithWeather = {
         ...nextPlanData,
         planInput: {
           ...nextPlanData.planInput,
           weather,
         },
-      });
+      };
+      setPlanData(planDataWithWeather);
+      if (options.persist) {
+        await repository.save(planDataWithWeather);
+      }
       setSaveStatus(`Weather refreshed for ${nextPlanData.location.name}`);
     } catch (error) {
       setSaveStatus(error instanceof Error ? error.message : "Weather refresh failed");
@@ -185,8 +193,6 @@ export default function App() {
         <ProgressScreen
           garminReport={planData.garminReport}
           garminInsights={garminInsights}
-          metrics={planData.progressMetrics}
-          trendData={planData.trendData}
         />
       )}
       {activeScreen === "setup" && (
@@ -197,7 +203,6 @@ export default function App() {
           storageMode={repository.mode}
           onReset={resetPlanData}
           onSave={savePlanData}
-          onImportDemoGarmin={importDemoGarmin}
           onImportGarminBridgeFile={importGarminBridgeFile}
           onRefreshLiveWeather={refreshLiveWeather}
           onSendMagicLink={sendMagicLink}

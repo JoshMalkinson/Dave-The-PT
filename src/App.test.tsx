@@ -50,17 +50,6 @@ describe("App", () => {
     expect(screen.getByText("low")).toBeInTheDocument();
   });
 
-  it("imports demo Garmin metrics into the dashboard", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "Setup" }));
-    await user.click(screen.getByRole("button", { name: "Import demo Garmin" }));
-    await user.click(screen.getByRole("button", { name: "Home" }));
-
-    expect(screen.getByLabelText("Readiness 76%")).toBeInTheDocument();
-  });
-
   it("imports Garmin bridge JSON into the dashboard", async () => {
     const user = userEvent.setup();
     const bridgeFile = new File(
@@ -126,6 +115,16 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Home" }));
     expect(screen.getByRole("heading", { name: "Garmin Insights" })).toBeInTheDocument();
+  });
+
+  it("does not present seeded progress as Garmin data before import", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Progress" }));
+
+    expect(screen.getByRole("heading", { name: "Garmin Data Required" })).toBeInTheDocument();
+    expect(screen.queryByText("Weekly load")).not.toBeInTheDocument();
   });
 
   it("refreshes weather from Open-Meteo and updates the plan", async () => {

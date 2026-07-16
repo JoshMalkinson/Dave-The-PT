@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { demoPlanData } from "../../data/planData";
-import { applyGarminDailyImport, demoGarminDailyImport } from "./garminImport";
+import { applyGarminDailyImport, type GarminDailyImport } from "./garminImport";
+
+const garminDailyImport: GarminDailyImport = {
+  label: "Garmin",
+  recoveryScore: 76,
+  sleepSeconds: 26_400,
+  hrvStatus: "balanced",
+  hrvScore: 72,
+  hardWorkoutsLastFiveDays: 1,
+  weeklyLoad: 486,
+  vo2Max: 51.8,
+  restingHeartRate: 51,
+};
 
 describe("applyGarminDailyImport", () => {
   it("maps Garmin readiness signals into athlete state", () => {
     const nextPlanData = applyGarminDailyImport(demoPlanData, {
-      ...demoGarminDailyImport,
+      ...garminDailyImport,
       recoveryScore: 54,
       sleepSeconds: 19_800,
       hrvStatus: "low",
@@ -22,7 +34,7 @@ describe("applyGarminDailyImport", () => {
 
   it("updates progress metrics from Garmin summary values", () => {
     const nextPlanData = applyGarminDailyImport(demoPlanData, {
-      ...demoGarminDailyImport,
+      ...garminDailyImport,
       weeklyLoad: 512,
       vo2Max: 52.4,
       restingHeartRate: 48,
@@ -39,7 +51,7 @@ describe("applyGarminDailyImport", () => {
 
   it("adds the imported day to the trend data", () => {
     const nextPlanData = applyGarminDailyImport(demoPlanData, {
-      ...demoGarminDailyImport,
+      ...garminDailyImport,
       label: "Today",
       weeklyLoad: 512,
       sleepSeconds: 27_000,
