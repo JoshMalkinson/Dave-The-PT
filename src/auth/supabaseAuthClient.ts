@@ -8,6 +8,7 @@ export interface AuthSessionState {
 
 export interface SupabaseAuthClient {
   getSessionState(): Promise<AuthSessionState>;
+  getAccessToken(): Promise<string | null>;
   sendMagicLink(email: string, redirectTo: string): Promise<void>;
   signOut(): Promise<void>;
   onAuthStateChange(callback: (state: AuthSessionState) => void): () => void;
@@ -33,6 +34,12 @@ export function createSupabaseAuthClient(client: SupabaseClient): SupabaseAuthCl
       const { data, error } = await client.auth.getSession();
       throwIfSupabaseError(error);
       return toSessionState(data.session);
+    },
+
+    async getAccessToken() {
+      const { data, error } = await client.auth.getSession();
+      throwIfSupabaseError(error);
+      return data.session?.access_token ?? null;
     },
 
     async sendMagicLink(email, redirectTo) {

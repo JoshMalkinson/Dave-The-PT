@@ -613,6 +613,13 @@ p {
   font-weight: 800;
 }
 
+.integration-note {
+  margin: 14px 0 0;
+  color: #49635b;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .control-row {
   display: grid;
   grid-template-columns: 1fr auto;

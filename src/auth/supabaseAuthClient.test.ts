@@ -15,14 +15,23 @@ describe("createSupabaseAuthClient", () => {
 
   it("returns signed-in session state", async () => {
     const client = createFakeClient({
-      session: { user: { id: "user-123", email: "runner@example.com" } },
+      session: { access_token: "jwt", user: { id: "user-123", email: "rider@example.com" } },
     });
     const auth = createSupabaseAuthClient(client as never);
 
     await expect(auth.getSessionState()).resolves.toMatchObject({
-      email: "runner@example.com",
+      email: "rider@example.com",
       isSignedIn: true,
     });
+  });
+
+  it("returns the current access token for backend integrations", async () => {
+    const client = createFakeClient({
+      session: { access_token: "jwt", user: { id: "user-123", email: "rider@example.com" } },
+    });
+    const auth = createSupabaseAuthClient(client as never);
+
+    await expect(auth.getAccessToken()).resolves.toBe("jwt");
   });
 
   it("requests a magic link with the current redirect URL", async () => {

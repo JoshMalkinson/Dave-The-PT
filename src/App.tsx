@@ -15,6 +15,12 @@ import { buildAdaptiveWeek } from "./domain/trainingEngine";
 import { parseGarminBridgeExportJson } from "./integrations/garmin/garminBridgeImport";
 import { applyGarminDailyImport } from "./integrations/garmin/garminImport";
 import { buildGarminInsights } from "./integrations/garmin/garminReport";
+import {
+  buildStravaAuthorizationUrl,
+  createStravaOAuthState,
+  exchangeStravaAuthorizationCode,
+  isStravaOAuthState,
+} from "./integrations/strava/stravaOAuth";
 import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
 import { createSupabaseBrowserClient } from "./storage/supabaseClient";
@@ -23,9 +29,11 @@ export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>("home");
   const [planData, setPlanData] = useState<PlanData>(demoPlanData);
   const [saveStatus, setSaveStatus] = useState("Awaiting Garmin bridge import");
+  const [stravaStatus, setStravaStatus] = useState("Strava is ready once configured");
   const [authSession, setAuthSession] = useState<AuthSessionState | null>(null);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const stravaClientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
   const supabaseClient = useMemo(
     () =>
       supabaseUrl && supabaseAnonKey
@@ -90,6 +98,50 @@ export default function App() {
       unsubscribe();
     };
   }, [authClient, repository]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    if (!code || !isStravaOAuthState(state)) {
+      return;
+    }
+    if (!authClient || !supabaseUrl) {
+      setStravaStatus("Sign into Supabase, then retry Strava connection.");
+      return;
+    }
+
+    let isMounted = true;
+    authClient
+      .getAccessToken()
+      .then((accessToken) => {
+        if (!accessToken) {
+          throw new Error("Sign into Supabase, then retry Strava connection.");
+        }
+        return exchangeStravaAuthorizationCode({
+          supabaseUrl,
+          accessToken,
+          code,
+          redirectUri: window.location.origin + window.location.pathname,
+        });
+      })
+      .then((result) => {
+        if (!isMounted) {
+          return;
+        }
+        setStravaStatus(result.message);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })
+      .catch((error) => {
+        if (isMounted) {
+          setStravaStatus(error instanceof Error ? error.message : "Strava connection failed");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authClient, supabaseUrl]);
 
   const adaptiveWeek = useMemo(() => buildAdaptiveWeek(planData.planInput), [planData]);
   const garminInsights = useMemo(
@@ -176,6 +228,23 @@ export default function App() {
     setSaveStatus("Signed out of Supabase");
   }
 
+  function connectStrava() {
+    if (!stravaClientId) {
+      setStravaStatus("Set VITE_STRAVA_CLIENT_ID after creating a Strava API app.");
+      return;
+    }
+    if (!authSession?.isSignedIn) {
+      setStravaStatus("Sign into Supabase before connecting Strava.");
+      return;
+    }
+
+    window.location.href = buildStravaAuthorizationUrl({
+      clientId: stravaClientId,
+      redirectUri: window.location.origin + window.location.pathname,
+      state: createStravaOAuthState(),
+    });
+  }
+
   return (
     <AppShell activeScreen={activeScreen} onScreenChange={setActiveScreen}>
       {activeScreen === "home" && (
@@ -201,6 +270,9 @@ export default function App() {
           planData={planData}
           saveStatus={saveStatus}
           storageMode={repository.mode}
+          stravaClientId={stravaClientId}
+          stravaStatus={stravaStatus}
+          onConnectStrava={connectStrava}
           onReset={resetPlanData}
           onSave={savePlanData}
           onImportGarminBridgeFile={importGarminBridgeFile}

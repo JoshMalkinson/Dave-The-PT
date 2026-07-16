@@ -4,13 +4,17 @@ import type { AuthSessionState } from "../auth/supabaseAuthClient";
 import type { PlanData } from "../data/planData";
 import type { PlanRepositoryMode } from "../storage/planRepository";
 import { AuthPanel } from "./AuthPanel";
+import { StravaIntegrationPanel } from "./StravaIntegrationPanel";
 
 interface SetupScreenProps {
   authSession: AuthSessionState | null;
   planData: PlanData;
   saveStatus: string;
   storageMode: PlanRepositoryMode;
+  stravaClientId?: string;
+  stravaStatus: string;
   onReset: () => Promise<void>;
+  onConnectStrava: () => void;
   onImportGarminBridgeFile: (file: File) => Promise<void>;
   onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
   onSave: (planData: PlanData) => Promise<void>;
@@ -23,6 +27,9 @@ export function SetupScreen({
   planData,
   saveStatus,
   storageMode,
+  stravaClientId,
+  stravaStatus,
+  onConnectStrava,
   onImportGarminBridgeFile,
   onReset,
   onRefreshLiveWeather,
@@ -280,6 +287,13 @@ export function SetupScreen({
             Refresh live weather
           </button>
         </article>
+
+        <StravaIntegrationPanel
+          clientId={stravaClientId}
+          isSignedIn={Boolean(authSession?.isSignedIn)}
+          status={stravaStatus}
+          onConnect={onConnectStrava}
+        />
       </section>
 
       <section className="action-panel">

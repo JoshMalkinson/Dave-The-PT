@@ -9,6 +9,7 @@ Dave The PT is a mobile-friendly adaptive mountain bike coaching MVP. It combine
 - Supabase schema, RLS policies, auth adapter, and signed-in plan persistence.
 - Open-Meteo weather refresh for live forecasts.
 - Local Garmin Connect bridge while official Garmin access is approval-gated.
+- Strava OAuth scaffolding for importing ride history and rider-specific MTB targets.
 
 ## Run Locally
 
@@ -51,8 +52,9 @@ npm audit --audit-level=moderate
 2. Open Setup and adjust recovery, sleep, HRV, goal race, or location.
 3. Import a local Garmin bridge JSON file for Garmin-derived recovery and activity data.
 4. Refresh live weather to recalculate weather-aware recommendations.
-5. Open Plan to adjust the week's MTB workouts and sync them through the local Garmin bridge service.
-6. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
+5. Connect Strava from Setup to import ride history for personalized distance, speed, and climbing targets.
+6. Open Plan to adjust the week's MTB workouts and sync them through the local Garmin bridge service.
+7. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
 
 ## Garmin Bridge
 
