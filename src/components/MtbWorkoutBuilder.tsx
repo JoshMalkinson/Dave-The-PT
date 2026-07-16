@@ -33,7 +33,7 @@ function downloadJson(fileName: string, payload: unknown): void {
 
 export function MtbWorkoutBuilder() {
   const [draft, setDraft] = useState<MtbWorkoutDraft>(() =>
-    createMtbWorkoutDraft("mtb-hill-repeats-60", nextDate()),
+    createMtbWorkoutDraft("mtb-climb-repeats-50", nextDate()),
   );
   const bridgeExport = useMemo(() => buildMtbWorkoutBridgeExport(draft), [draft]);
   const durationSeconds = estimateMtbWorkoutSeconds(draft);

@@ -8,12 +8,12 @@ describe("MtbWorkoutBuilder", () => {
     const user = userEvent.setup();
     render(<MtbWorkoutBuilder />);
 
-    expect(screen.getByText("60 min")).toBeInTheDocument();
+    expect(screen.getByText("50 min")).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText("Repeat count"));
     await user.type(screen.getByLabelText("Repeat count"), "6");
 
-    expect(screen.getByText("67 min")).toBeInTheDocument();
+    expect(screen.getByText("57 min")).toBeInTheDocument();
   });
 
   it("downloads the adjusted bridge workout json", async () => {

@@ -1,6 +1,6 @@
 # Dave The PT
 
-Dave The PT is a mobile-friendly adaptive running coach MVP. It combines athlete recovery state, race goals, weekly availability, weather, and Garmin-style metrics into a daily training recommendation.
+Dave The PT is a mobile-friendly adaptive mountain bike coaching MVP. It combines athlete recovery state, race goals, weekly availability, weather, and Garmin-style metrics into ride recommendations and watch-ready MTB workouts.
 
 ## Current MVP
 
@@ -51,8 +51,11 @@ npm audit --audit-level=moderate
 2. Open Setup and adjust recovery, sleep, HRV, goal race, or location.
 3. Import a local Garmin bridge JSON file for Garmin-derived recovery and activity data.
 4. Refresh live weather to recalculate weather-aware recommendations.
-5. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
+5. Open Plan to adjust the week's MTB workouts and sync them through the local Garmin bridge service.
+6. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
 
 ## Garmin Bridge
 
 While Garmin developer approval is pending, use the local bridge in `tools/garmin_bridge_export.py` to generate `garmin-bridge-export.json` from a project-owned Garmin account. Use `--days 14` or another bounded window for richer Progress reporting. See `docs/garmin-bridge.md`.
+
+For workout sync, start `tools/garmin_workout_bridge_service.py` and use the Plan screen's `Sync week to Garmin` button. See `docs/garmin-workout-push.md`.

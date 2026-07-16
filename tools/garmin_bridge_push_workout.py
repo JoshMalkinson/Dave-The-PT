@@ -9,39 +9,39 @@ from typing import Any
 
 
 MTB_TEMPLATES = {
-    "mtb-endurance-75": {
-        "name": "Dave MTB Endurance 75",
-        "description": "Steady aerobic mountain bike endurance ride.",
+    "mtb-aerobic-45": {
+        "name": "Dave MTB Aerobic Spin 45",
+        "description": "Steady zone 2 aerobic mountain bike ride.",
         "steps": [
             ("warmup", 10 * 60),
-            ("interval", 55 * 60),
-            ("cooldown", 10 * 60),
+            ("interval", 30 * 60),
+            ("cooldown", 5 * 60),
         ],
     },
-    "mtb-hill-repeats-60": {
-        "name": "Dave MTB Hill Repeats 60",
-        "description": "Trail climb repeats with easy roll-down recoveries.",
+    "mtb-climb-repeats-50": {
+        "name": "Dave MTB Climb Repeats 50",
+        "description": "Threshold-focused trail climb repeats with easy roll-down recoveries.",
         "steps": [
-            ("warmup", 12 * 60),
+            ("warmup", 10 * 60),
             ("repeat", 5, [("interval", 4 * 60), ("recovery", 3 * 60)]),
-            ("cooldown", 13 * 60),
+            ("cooldown", 5 * 60),
         ],
     },
-    "mtb-tempo-90": {
-        "name": "Dave MTB Tempo Trail 90",
-        "description": "Progressive tempo-focused mountain bike ride.",
+    "mtb-tempo-55": {
+        "name": "Dave MTB Tempo Trail 55",
+        "description": "Sweet-spot tempo mountain bike ride for sustained trail pressure.",
         "steps": [
-            ("warmup", 15 * 60),
-            ("interval", 3 * 20 * 60),
-            ("cooldown", 15 * 60),
+            ("warmup", 10 * 60),
+            ("repeat", 2, [("interval", 13 * 60), ("recovery", 5 * 60)]),
+            ("cooldown", 9 * 60),
         ],
     },
-    "mtb-recovery-45": {
-        "name": "Dave MTB Recovery Spin 45",
+    "mtb-recovery-40": {
+        "name": "Dave MTB Recovery Spin 40",
         "description": "Easy recovery spin, keep pressure low.",
         "steps": [
             ("warmup", 5 * 60),
-            ("recovery", 35 * 60),
+            ("recovery", 30 * 60),
             ("cooldown", 5 * 60),
         ],
     },
@@ -54,11 +54,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--workout",
-        default="mtb-endurance-75",
+        default="mtb-aerobic-45",
         choices=sorted(MTB_TEMPLATES),
         help="MTB workout template to build",
     )
     parser.add_argument("--input", help="Bridge workout JSON exported from the app")
+    parser.add_argument("--input-week", help="Bridge week JSON exported from the app")
     parser.add_argument("--date", help="Optional schedule date, YYYY-MM-DD")
     parser.add_argument("--push", action="store_true", help="Actually upload to Garmin")
     parser.add_argument(
@@ -146,6 +147,20 @@ def build_workout(template_id: str) -> Any:
 
 def load_bridge_payload(input_path: str) -> tuple[dict[str, Any], str | None]:
     payload = json.loads(Path(input_path).read_text(encoding="utf-8"))
+    return load_bridge_payload_from_object(payload)
+
+
+def load_week_bridge_payload(input_path: str) -> list[tuple[dict[str, Any], str | None]]:
+    payload = json.loads(Path(input_path).read_text(encoding="utf-8"))
+    workouts = payload.get("workouts")
+    if not isinstance(workouts, list):
+        raise ValueError("Bridge week file must contain workouts")
+    return [load_bridge_payload_from_object(workout) for workout in workouts]
+
+
+def load_bridge_payload_from_object(payload: Any) -> tuple[dict[str, Any], str | None]:
+    if not isinstance(payload, dict):
+        raise ValueError("Bridge workout entry must be an object")
     workout_payload = payload.get("garminWorkoutPayload")
     if not isinstance(workout_payload, dict):
         raise ValueError("Bridge workout file must contain garminWorkoutPayload")
@@ -167,6 +182,36 @@ def estimate_duration_seconds(steps: list[Any]) -> int:
 
 def main() -> int:
     args = parse_args()
+    if args.input and args.input_week:
+        raise ValueError("Use --input or --input-week, not both")
+
+    if args.input_week:
+        week_payloads = load_week_bridge_payload(args.input_week)
+        if not args.push:
+            print(
+                json.dumps(
+                    [
+                        {"scheduleDate": schedule_date, "garminWorkoutPayload": payload}
+                        for payload, schedule_date in week_payloads
+                    ],
+                    indent=2,
+                )
+            )
+            print("\nDry run only. Add --push to upload this MTB workout week to Garmin.")
+            return 0
+
+        client = login(args.tokenstore)
+        for payload, schedule_date in week_payloads:
+            uploaded = client.upload_workout(payload)
+            print(json.dumps(uploaded, indent=2))
+            workout_id = uploaded.get("workoutId") or uploaded.get("id")
+            if schedule_date and workout_id:
+                scheduled = client.schedule_workout(workout_id, schedule_date)
+                print(json.dumps(scheduled, indent=2))
+            elif schedule_date:
+                print("Uploaded workout, but no workout id was returned to schedule.")
+        return 0
+
     if args.input:
         payload, input_schedule_date = load_bridge_payload(args.input)
         schedule_date = args.date or input_schedule_date

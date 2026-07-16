@@ -54,9 +54,9 @@ describe("parseGarminBridgeImportJson", () => {
             {
               id: "123",
               date: "2026-07-14",
-              name: "Morning Run",
-              type: "running",
-              distanceMeters: 8200,
+              name: "Morning MTB Ride",
+              type: "cycling",
+              distanceMeters: 18200,
               durationSeconds: 2700,
               averageHeartRate: 148,
               trainingEffect: 3.2,
@@ -68,7 +68,7 @@ describe("parseGarminBridgeImportJson", () => {
 
     expect(parsed.reportData?.windowDays).toBe(14);
     expect(parsed.reportData?.days[0].steps).toBe(10_250);
-    expect(parsed.reportData?.activities[0].distanceMeters).toBe(8200);
+    expect(parsed.reportData?.activities[0].distanceMeters).toBe(18200);
   });
 
   it("parses a raw GarminDailyImport payload", () => {

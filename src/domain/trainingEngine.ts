@@ -45,7 +45,7 @@ function recoveryWorkout(day: DayLabel): Workout {
   return {
     id: `recovery-${day.toLowerCase()}`,
     type: "recovery",
-    title: "45 min Zone 2 Recovery Run",
+    title: "45 min Zone 2 Recovery Spin",
     day,
     durationMinutes: 45,
     intensity: "easy",
@@ -62,8 +62,8 @@ function capWorkoutForTaper(workout: Workout): Workout {
 }
 
 function assignLongRunToBestWeekend(input: TrainingPlanInput, workoutsByDay: Map<DayLabel, Workout>) {
-  const longRun = input.workouts.find((workout) => workout.type === "long");
-  if (!longRun) {
+  const longRide = input.workouts.find((workout) => workout.type === "long");
+  if (!longRide) {
     return new Map<DayLabel, string[]>();
   }
 
@@ -77,7 +77,7 @@ function assignLongRunToBestWeekend(input: TrainingPlanInput, workoutsByDay: Map
   const saturdayScore = scoreWeather(saturday);
   const sundayScore = scoreWeather(sunday);
   const shouldMoveToSunday =
-    longRun.day === "Saturday" &&
+    longRide.day === "Saturday" &&
     input.availability.Sunday.length > 0 &&
     sundayScore.score > saturdayScore.score + 20;
 
@@ -86,10 +86,10 @@ function assignLongRunToBestWeekend(input: TrainingPlanInput, workoutsByDay: Map
   }
 
   const sundayWorkout = workoutsByDay.get("Sunday") ?? { ...restWorkout, day: "Sunday" };
-  workoutsByDay.set("Sunday", { ...longRun, day: "Sunday" });
+  workoutsByDay.set("Sunday", { ...longRide, day: "Sunday" });
   workoutsByDay.set("Saturday", { ...sundayWorkout, day: "Saturday" });
-  reasonsByDay.set("Sunday", ["Long run moved to the better weekend weather window."]);
-  reasonsByDay.set("Saturday", ["Original long run moved away from poor weekend weather."]);
+  reasonsByDay.set("Sunday", ["Long ride moved to the better weekend weather window."]);
+  reasonsByDay.set("Saturday", ["Original long ride moved away from poor weekend weather."]);
   return reasonsByDay;
 }
 

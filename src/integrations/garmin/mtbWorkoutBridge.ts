@@ -1,8 +1,8 @@
 export type MtbWorkoutTemplateId =
-  | "mtb-endurance-75"
-  | "mtb-hill-repeats-60"
-  | "mtb-tempo-90"
-  | "mtb-recovery-45";
+  | "mtb-aerobic-45"
+  | "mtb-climb-repeats-50"
+  | "mtb-tempo-55"
+  | "mtb-recovery-40";
 
 export interface MtbWorkoutDraft {
   templateId: MtbWorkoutTemplateId;
@@ -22,58 +22,73 @@ export interface MtbWorkoutTemplate {
   draft: Omit<MtbWorkoutDraft, "scheduleDate">;
 }
 
+export interface MtbWorkoutBridgeExport {
+  schemaVersion: number;
+  source: "dave-the-pt";
+  workoutType: "mountain_bike";
+  scheduleDate: string;
+  garminWorkoutPayload: ReturnType<typeof buildGarminWorkoutPayload>;
+}
+
+export interface MtbWorkoutWeekBridgeExport {
+  schemaVersion: number;
+  source: "dave-the-pt";
+  workoutType: "mountain_bike_week";
+  workouts: MtbWorkoutBridgeExport[];
+}
+
 export const mtbWorkoutTemplates: MtbWorkoutTemplate[] = [
   {
-    id: "mtb-endurance-75",
-    label: "Endurance 75",
+    id: "mtb-aerobic-45",
+    label: "Aerobic Spin 45",
     draft: {
-      templateId: "mtb-endurance-75",
-      name: "Dave MTB Endurance 75",
-      description: "Steady aerobic mountain bike endurance ride.",
+      templateId: "mtb-aerobic-45",
+      name: "Dave MTB Aerobic Spin 45",
+      description: "Steady zone 2 aerobic mountain bike ride.",
       warmupMinutes: 10,
-      workMinutes: 55,
+      workMinutes: 30,
       repeats: 1,
       recoveryMinutes: 0,
-      cooldownMinutes: 10,
+      cooldownMinutes: 5,
     },
   },
   {
-    id: "mtb-hill-repeats-60",
-    label: "Hill Repeats 60",
+    id: "mtb-climb-repeats-50",
+    label: "Climb Repeats 50",
     draft: {
-      templateId: "mtb-hill-repeats-60",
-      name: "Dave MTB Hill Repeats 60",
-      description: "Trail climb repeats with easy roll-down recoveries.",
-      warmupMinutes: 12,
+      templateId: "mtb-climb-repeats-50",
+      name: "Dave MTB Climb Repeats 50",
+      description: "Threshold-focused trail climb repeats with easy roll-down recoveries.",
+      warmupMinutes: 10,
       workMinutes: 4,
       repeats: 5,
       recoveryMinutes: 3,
-      cooldownMinutes: 13,
+      cooldownMinutes: 5,
     },
   },
   {
-    id: "mtb-tempo-90",
-    label: "Tempo Trail 90",
+    id: "mtb-tempo-55",
+    label: "Tempo Trail 55",
     draft: {
-      templateId: "mtb-tempo-90",
-      name: "Dave MTB Tempo Trail 90",
-      description: "Progressive tempo-focused mountain bike ride.",
-      warmupMinutes: 15,
-      workMinutes: 60,
-      repeats: 1,
-      recoveryMinutes: 0,
-      cooldownMinutes: 15,
+      templateId: "mtb-tempo-55",
+      name: "Dave MTB Tempo Trail 55",
+      description: "Sweet-spot tempo mountain bike ride for sustained trail pressure.",
+      warmupMinutes: 10,
+      workMinutes: 13,
+      repeats: 2,
+      recoveryMinutes: 5,
+      cooldownMinutes: 9,
     },
   },
   {
-    id: "mtb-recovery-45",
-    label: "Recovery Spin 45",
+    id: "mtb-recovery-40",
+    label: "Recovery Spin 40",
     draft: {
-      templateId: "mtb-recovery-45",
-      name: "Dave MTB Recovery Spin 45",
+      templateId: "mtb-recovery-40",
+      name: "Dave MTB Recovery Spin 40",
       description: "Easy recovery spin, keep pressure low.",
       warmupMinutes: 5,
-      workMinutes: 35,
+      workMinutes: 30,
       repeats: 1,
       recoveryMinutes: 0,
       cooldownMinutes: 5,
@@ -102,6 +117,29 @@ export function estimateMtbWorkoutSeconds(draft: MtbWorkoutDraft): number {
   return Math.round(
     (draft.warmupMinutes + repeatBlockMinutes + draft.cooldownMinutes) * 60,
   );
+}
+
+export function templateIdForWorkout(input: {
+  durationMinutes: number;
+  intensity: string;
+  type: string;
+}): MtbWorkoutTemplateId | null {
+  if (input.durationMinutes <= 0 || input.type === "rest") {
+    return null;
+  }
+  if (input.intensity === "hard" || input.type === "intervals" || input.type === "hills") {
+    return "mtb-climb-repeats-50";
+  }
+  if (input.type === "long") {
+    return "mtb-aerobic-45";
+  }
+  if (input.intensity === "moderate" || input.type === "tempo" || input.type === "threshold") {
+    return "mtb-tempo-55";
+  }
+  if (input.type === "easy" || input.intensity === "easy") {
+    return "mtb-aerobic-45";
+  }
+  return "mtb-recovery-40";
 }
 
 function targetType() {
@@ -136,7 +174,7 @@ function executableStep(stepOrder: number, stepTypeId: number, stepTypeKey: stri
   };
 }
 
-export function buildMtbWorkoutBridgeExport(draft: MtbWorkoutDraft) {
+function buildGarminWorkoutPayload(draft: MtbWorkoutDraft) {
   const workStep = executableStep(1, 3, "interval", draft.workMinutes);
   const recoveryStep =
     draft.recoveryMinutes > 0
@@ -169,11 +207,6 @@ export function buildMtbWorkoutBridgeExport(draft: MtbWorkoutDraft) {
   ];
 
   return {
-    schemaVersion: 1,
-    source: "dave-the-pt",
-    workoutType: "mountain_bike",
-    scheduleDate: draft.scheduleDate,
-    garminWorkoutPayload: {
       workoutName: draft.name,
       sportType: {
         sportTypeId: 2,
@@ -194,6 +227,26 @@ export function buildMtbWorkoutBridgeExport(draft: MtbWorkoutDraft) {
       ],
       author: {},
       description: draft.description,
-    },
+  };
+}
+
+export function buildMtbWorkoutBridgeExport(draft: MtbWorkoutDraft): MtbWorkoutBridgeExport {
+  return {
+    schemaVersion: 1,
+    source: "dave-the-pt",
+    workoutType: "mountain_bike",
+    scheduleDate: draft.scheduleDate,
+    garminWorkoutPayload: buildGarminWorkoutPayload(draft),
+  };
+}
+
+export function buildMtbWeekBridgeExport(
+  drafts: MtbWorkoutDraft[],
+): MtbWorkoutWeekBridgeExport {
+  return {
+    schemaVersion: 1,
+    source: "dave-the-pt",
+    workoutType: "mountain_bike_week",
+    workouts: drafts.map(buildMtbWorkoutBridgeExport),
   };
 }

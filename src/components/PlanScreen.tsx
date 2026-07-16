@@ -1,6 +1,5 @@
-import { ArrowRight, CalendarDays, CloudLightning } from "lucide-react";
 import type { AdaptiveWeek } from "../domain/types";
-import { MtbWorkoutBuilder } from "./MtbWorkoutBuilder";
+import { MtbWeeklyPlanner } from "./MtbWeeklyPlanner";
 
 interface PlanScreenProps {
   week: AdaptiveWeek;
@@ -13,44 +12,12 @@ export function PlanScreen({ week }: PlanScreenProps) {
         <p className="eyebrow">Dynamic Calendar</p>
         <h1>Adaptive Week</h1>
         <p>
-          The engine fits the required workouts into the best available windows
-          instead of locking the athlete to a brittle calendar.
+          The engine fits the required mountain bike workouts into the best available
+          windows, then exports the week for daily Garmin watch sync.
         </p>
       </section>
 
-      <section className="week-list" aria-label="Adaptive weekly plan">
-        {week.days.map((day) => {
-          const changed = day.originalWorkout && day.originalWorkout.id !== day.workout.id;
-          return (
-            <article className="day-card" key={day.date}>
-              <div className="day-meta">
-                <CalendarDays size={18} aria-hidden="true" />
-                <span>{day.label}</span>
-              </div>
-              <div className="day-main">
-                <h2>{day.workout.title}</h2>
-                <p>
-                  {day.workout.durationMinutes || "Rest"}{" "}
-                  {day.workout.durationMinutes ? "min" : ""} · {day.scheduledWindow}
-                </p>
-              </div>
-              <div className="weather-chip">
-                <CloudLightning size={16} aria-hidden="true" />
-                {day.weatherScore.level}
-              </div>
-              {changed && (
-                <p className="change-note">
-                  {day.originalWorkout?.title} <ArrowRight size={14} aria-hidden="true" />{" "}
-                  {day.workout.title}
-                </p>
-              )}
-              <p className="reason-note">{day.reasons[0]}</p>
-            </article>
-          );
-        })}
-      </section>
-
-      <MtbWorkoutBuilder />
+      <MtbWeeklyPlanner week={week} />
     </div>
   );
 }

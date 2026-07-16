@@ -86,9 +86,9 @@ describe("App", () => {
               {
                 id: "activity-1",
                 date: "2026-07-15",
-                name: "Morning Run",
-                type: "running",
-                distanceMeters: 8600,
+                name: "Morning MTB Ride",
+                type: "cycling",
+                distanceMeters: 18600,
                 durationSeconds: 2820,
                 averageHeartRate: 145,
                 trainingEffect: 3.1,
@@ -111,7 +111,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Progress" }));
     expect(screen.getByRole("heading", { name: "Garmin Report" })).toBeInTheDocument();
-    expect(screen.getByText("Morning Run")).toBeInTheDocument();
+    expect(screen.getByText("Morning MTB Ride")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Home" }));
     expect(screen.getByRole("heading", { name: "Garmin Insights" })).toBeInTheDocument();
