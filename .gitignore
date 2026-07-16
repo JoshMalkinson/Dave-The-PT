@@ -14,3 +14,4 @@ garmin-mtb-workout*.json
 garmin-mtb-week*.json
 .garminconnect/
 .venv-garmin/
+supabase/.temp/

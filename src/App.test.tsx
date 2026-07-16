@@ -7,6 +7,9 @@ describe("App", () => {
   beforeEach(() => {
     window.localStorage.clear();
     vi.unstubAllGlobals();
+    vi.stubEnv("VITE_SUPABASE_URL", "");
+    vi.stubEnv("VITE_SUPABASE_ANON_KEY", "");
+    vi.stubEnv("VITE_STRAVA_CLIENT_ID", "");
   });
 
   it("renders the home dashboard by default", () => {

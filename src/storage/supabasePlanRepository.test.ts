@@ -48,6 +48,19 @@ describe("SupabasePlanRepository", () => {
     expect(client.operations).toEqual([]);
   });
 
+  it("treats a missing Supabase auth session as an unsigned-out user", async () => {
+    const client = createFakeSupabaseClient({
+      authError: { message: "Auth session missing!" },
+      userId: null,
+    });
+    const repository = new SupabasePlanRepository(client as never);
+
+    await expect(repository.load()).resolves.toEqual(demoPlanData);
+    await repository.save(demoPlanData);
+
+    expect(client.operations).toEqual([]);
+  });
+
   it("writes signed-in plan data to user-owned Supabase tables", async () => {
     const client = createFakeSupabaseClient({ userId: "user-123" });
     const repository = new SupabasePlanRepository(client as never);
@@ -103,7 +116,10 @@ interface FakeOperation {
 
 interface FakeSupabaseClient {
   auth: {
-    getUser: () => Promise<{ data: { user: { id: string } | null }; error: null }>;
+    getUser: () => Promise<{
+      data: { user: { id: string } | null };
+      error: { message: string } | null;
+    }>;
   };
   from: (tableName: string) => FakeQuery;
   operations: FakeOperation[];
@@ -125,9 +141,11 @@ interface FakeQuery {
 }
 
 function createFakeSupabaseClient({
+  authError = null,
   userId,
   tableData = {},
 }: {
+  authError?: { message: string } | null;
   userId: string | null;
   tableData?: Record<string, unknown>;
 }): FakeSupabaseClient {
@@ -136,7 +154,10 @@ function createFakeSupabaseClient({
   return {
     operations,
     auth: {
-      getUser: async () => ({ data: { user: userId ? { id: userId } : null }, error: null }),
+      getUser: async () => ({
+        data: { user: userId ? { id: userId } : null },
+        error: authError,
+      }),
     },
     from: (tableName) => createFakeQuery(tableName, tableData, operations),
   };
