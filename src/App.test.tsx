@@ -161,4 +161,15 @@ describe("App", () => {
 
     expect(screen.getByText("poor")).toBeInTheDocument();
   });
+
+  it("shows the friendly weather location without coordinate controls", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+
+    expect(screen.getByText("Port Elizabeth / Gqeberha")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Latitude")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Longitude")).not.toBeInTheDocument();
+  });
 });

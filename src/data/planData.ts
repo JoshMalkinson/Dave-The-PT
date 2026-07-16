@@ -22,9 +22,9 @@ export interface TrainingLocation {
 
 export const demoPlanData: PlanData = {
   location: {
-    name: "Johannesburg",
-    latitude: -26.2041,
-    longitude: 28.0473,
+    name: "Port Elizabeth / Gqeberha",
+    latitude: -33.9608,
+    longitude: 25.6022,
     timezone: "Africa/Johannesburg",
   },
   planInput: demoPlanInput,
