@@ -25,11 +25,11 @@ export function AppShell({ activeScreen, children, onScreenChange }: AppShellPro
             <Activity size={22} strokeWidth={2.4} />
           </span>
           <div>
-            <p className="eyebrow">Adaptive Coach</p>
-            <p className="brand-subtitle">Weather-aware running decisions</p>
+            <p className="eyebrow">Dave The PT</p>
+            <p className="brand-subtitle">Garmin and weather-aware MTB coaching</p>
           </div>
         </div>
-        <p className="sync-pill">Demo Garmin sync</p>
+        <p className="sync-pill">Garmin bridge + live weather</p>
       </header>
 
       <main className="screen-area">{children}</main>

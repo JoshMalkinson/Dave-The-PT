@@ -3,9 +3,9 @@ import { fetchOpenMeteoWeather } from "./openMeteoClient";
 import type { TrainingLocation } from "../../data/planData";
 
 const location: TrainingLocation = {
-  name: "Johannesburg",
-  latitude: -26.2041,
-  longitude: 28.0473,
+  name: "Port Elizabeth / Gqeberha",
+  latitude: -33.9608,
+  longitude: 25.6022,
   timezone: "Africa/Johannesburg",
 };
 
@@ -44,8 +44,8 @@ describe("fetchOpenMeteoWeather", () => {
 
     const requestedUrl = new URL(fetcher.mock.calls[0][0]);
     expect(requestedUrl.hostname).toBe("api.open-meteo.com");
-    expect(requestedUrl.searchParams.get("latitude")).toBe("-26.2041");
-    expect(requestedUrl.searchParams.get("longitude")).toBe("28.0473");
+    expect(requestedUrl.searchParams.get("latitude")).toBe("-33.9608");
+    expect(requestedUrl.searchParams.get("longitude")).toBe("25.6022");
     expect(requestedUrl.searchParams.get("forecast_days")).toBe("7");
     expect(requestedUrl.searchParams.get("timezone")).toBe("Africa/Johannesburg");
   });

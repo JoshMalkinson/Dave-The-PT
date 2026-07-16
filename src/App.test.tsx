@@ -7,15 +7,17 @@ describe("App", () => {
   beforeEach(() => {
     window.localStorage.clear();
     vi.unstubAllGlobals();
+    vi.stubEnv("VITE_SUPABASE_URL", "");
+    vi.stubEnv("VITE_SUPABASE_ANON_KEY", "");
+    vi.stubEnv("VITE_STRAVA_CLIENT_ID", "");
   });
 
   it("renders the home dashboard by default", () => {
     render(<App />);
 
-    expect(
-      screen.getByRole("heading", { name: "Today's Mission" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Coach's Explanation")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
+    expect(screen.getByText("Decision factors")).toBeInTheDocument();
+    expect(screen.queryByText("Trailseeker MTB")).not.toBeInTheDocument();
   });
 
   it("navigates between the four MVP screens", async () => {
@@ -29,10 +31,10 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Progress" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Setup" }));
-    expect(screen.getByRole("heading", { name: "Setup" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Data setup" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Home" }));
-    expect(screen.getByRole("heading", { name: "Today's Mission" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
   });
 
   it("saves setup edits and recalculates the visible readiness", async () => {
@@ -40,25 +42,25 @@ describe("App", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Setup" }));
-    await user.clear(screen.getByLabelText("Race name"));
-    await user.type(screen.getByLabelText("Race name"), "Joburg 10K");
     await user.click(screen.getByRole("button", { name: "Low HRV" }));
     await user.click(screen.getByRole("button", { name: "Save setup" }));
     await user.click(screen.getByRole("button", { name: "Home" }));
 
-    expect(screen.getByText("Joburg 10K")).toBeInTheDocument();
     expect(screen.getByText("low")).toBeInTheDocument();
   });
 
-  it("imports demo Garmin metrics into the dashboard", async () => {
+  it("keeps setup focused on data inputs instead of target race fields", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Setup" }));
-    await user.click(screen.getByRole("button", { name: "Import demo Garmin" }));
-    await user.click(screen.getByRole("button", { name: "Home" }));
 
-    expect(screen.getByLabelText("Readiness 76%")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Data setup" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Garmin State" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Strava Ride History" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Goal Race" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Race name")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Race date")).not.toBeInTheDocument();
   });
 
   it("imports Garmin bridge JSON into the dashboard", async () => {
@@ -97,9 +99,9 @@ describe("App", () => {
               {
                 id: "activity-1",
                 date: "2026-07-15",
-                name: "Morning Run",
-                type: "running",
-                distanceMeters: 8600,
+                name: "Morning MTB Ride",
+                type: "cycling",
+                distanceMeters: 18600,
                 durationSeconds: 2820,
                 averageHeartRate: 145,
                 trainingEffect: 3.1,
@@ -122,7 +124,20 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Progress" }));
     expect(screen.getByRole("heading", { name: "Garmin Report" })).toBeInTheDocument();
-    expect(screen.getByText("Morning Run")).toBeInTheDocument();
+    expect(screen.getByText("Morning MTB Ride")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Home" }));
+    expect(screen.getByRole("heading", { name: "Garmin Insights" })).toBeInTheDocument();
+  });
+
+  it("does not present seeded progress as Garmin data before import", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Progress" }));
+
+    expect(screen.getByRole("heading", { name: "Garmin Data Required" })).toBeInTheDocument();
+    expect(screen.queryByText("Weekly load")).not.toBeInTheDocument();
   });
 
   it("refreshes weather from Open-Meteo and updates the plan", async () => {
@@ -158,5 +173,26 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Home" }));
 
     expect(screen.getByText("poor")).toBeInTheDocument();
+  });
+
+  it("shows the friendly weather location without coordinate controls", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+
+    expect(screen.getByText("Port Elizabeth / Gqeberha")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Latitude")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Longitude")).not.toBeInTheDocument();
+  });
+
+  it("explains why Strava cannot connect before Supabase is configured", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+    await user.click(screen.getByRole("button", { name: "Connect Strava" }));
+
+    expect(screen.getByText("Configure Supabase before connecting Strava.")).toBeInTheDocument();
   });
 });

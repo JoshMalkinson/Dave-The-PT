@@ -13,7 +13,14 @@ import { demoPlanData, type PlanData } from "./data/planData";
 import { explainRecommendation } from "./domain/coachNarrator";
 import { buildAdaptiveWeek } from "./domain/trainingEngine";
 import { parseGarminBridgeExportJson } from "./integrations/garmin/garminBridgeImport";
-import { applyGarminDailyImport, demoGarminDailyImport } from "./integrations/garmin/garminImport";
+import { applyGarminDailyImport } from "./integrations/garmin/garminImport";
+import { buildGarminInsights } from "./integrations/garmin/garminReport";
+import {
+  buildStravaAuthorizationUrl,
+  createStravaOAuthState,
+  exchangeStravaAuthorizationCode,
+  isStravaOAuthState,
+} from "./integrations/strava/stravaOAuth";
 import { fetchOpenMeteoWeather } from "./integrations/weather/openMeteoClient";
 import { createPlanRepository } from "./storage/createPlanRepository";
 import { createSupabaseBrowserClient } from "./storage/supabaseClient";
@@ -21,10 +28,12 @@ import { createSupabaseBrowserClient } from "./storage/supabaseClient";
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>("home");
   const [planData, setPlanData] = useState<PlanData>(demoPlanData);
-  const [saveStatus, setSaveStatus] = useState("Local demo data ready");
+  const [saveStatus, setSaveStatus] = useState("Awaiting Garmin bridge import");
+  const [stravaStatus, setStravaStatus] = useState("Strava is ready once configured");
   const [authSession, setAuthSession] = useState<AuthSessionState | null>(null);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const stravaClientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
   const supabaseClient = useMemo(
     () =>
       supabaseUrl && supabaseAnonKey
@@ -54,6 +63,9 @@ export default function App() {
     repository.load().then((loadedPlanData) => {
       if (isMounted) {
         setPlanData(loadedPlanData);
+        if (import.meta.env.MODE !== "test") {
+          void refreshWeatherForPlanData(loadedPlanData, { persist: true });
+        }
       }
     });
 
@@ -87,7 +99,55 @@ export default function App() {
     };
   }, [authClient, repository]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    if (!code || !isStravaOAuthState(state)) {
+      return;
+    }
+    if (!authClient || !supabaseUrl) {
+      setStravaStatus("Sign into Supabase, then retry Strava connection.");
+      return;
+    }
+
+    let isMounted = true;
+    authClient
+      .getAccessToken()
+      .then((accessToken) => {
+        if (!accessToken) {
+          throw new Error("Sign into Supabase, then retry Strava connection.");
+        }
+        return exchangeStravaAuthorizationCode({
+          supabaseUrl,
+          accessToken,
+          code,
+          redirectUri: window.location.origin + window.location.pathname,
+        });
+      })
+      .then((result) => {
+        if (!isMounted) {
+          return;
+        }
+        setStravaStatus(result.message);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })
+      .catch((error) => {
+        if (isMounted) {
+          setStravaStatus(error instanceof Error ? error.message : "Strava connection failed");
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authClient, supabaseUrl]);
+
   const adaptiveWeek = useMemo(() => buildAdaptiveWeek(planData.planInput), [planData]);
+  const garminInsights = useMemo(
+    () => (planData.garminReport ? buildGarminInsights(planData.garminReport) : []),
+    [planData.garminReport],
+  );
   const today =
     adaptiveWeek.days.find((day) => day.date === "2026-07-08") ?? adaptiveWeek.days[0];
   const explanation = explainRecommendation(today);
@@ -105,13 +165,7 @@ export default function App() {
   async function resetPlanData() {
     await repository.reset();
     setPlanData(demoPlanData);
-    setSaveStatus("Reset to demo data");
-  }
-
-  async function importDemoGarmin() {
-    const nextPlanData = applyGarminDailyImport(planData, demoGarminDailyImport);
-    await savePlanData(nextPlanData);
-    setSaveStatus("Imported demo Garmin metrics");
+    setSaveStatus("Reset local setup; import Garmin bridge data to refresh metrics");
   }
 
   async function importGarminBridgeFile(file: File) {
@@ -129,15 +183,26 @@ export default function App() {
   }
 
   async function refreshLiveWeather(nextPlanData: PlanData) {
+    await refreshWeatherForPlanData(nextPlanData, { persist: true });
+  }
+
+  async function refreshWeatherForPlanData(
+    nextPlanData: PlanData,
+    options: { persist: boolean },
+  ) {
     try {
       const weather = await fetchOpenMeteoWeather(nextPlanData.location);
-      await savePlanData({
+      const planDataWithWeather = {
         ...nextPlanData,
         planInput: {
           ...nextPlanData.planInput,
           weather,
         },
-      });
+      };
+      setPlanData(planDataWithWeather);
+      if (options.persist) {
+        await repository.save(planDataWithWeather);
+      }
       setSaveStatus(`Weather refreshed for ${nextPlanData.location.name}`);
     } catch (error) {
       setSaveStatus(error instanceof Error ? error.message : "Weather refresh failed");
@@ -163,6 +228,27 @@ export default function App() {
     setSaveStatus("Signed out of Supabase");
   }
 
+  function connectStrava() {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setStravaStatus("Configure Supabase before connecting Strava.");
+      return;
+    }
+    if (!stravaClientId) {
+      setStravaStatus("Set VITE_STRAVA_CLIENT_ID after creating a Strava API app.");
+      return;
+    }
+    if (!authSession?.isSignedIn) {
+      setStravaStatus("Sign into Supabase before connecting Strava.");
+      return;
+    }
+
+    window.location.href = buildStravaAuthorizationUrl({
+      clientId: stravaClientId,
+      redirectUri: window.location.origin + window.location.pathname,
+      state: createStravaOAuthState(),
+    });
+  }
+
   return (
     <AppShell activeScreen={activeScreen} onScreenChange={setActiveScreen}>
       {activeScreen === "home" && (
@@ -170,7 +256,7 @@ export default function App() {
           athlete={planData.planInput.athlete}
           dailyRecommendation={today}
           explanation={explanation}
-          race={planData.planInput.race}
+          garminInsights={garminInsights}
           storageMode={repository.mode}
         />
       )}
@@ -178,8 +264,7 @@ export default function App() {
       {activeScreen === "progress" && (
         <ProgressScreen
           garminReport={planData.garminReport}
-          metrics={planData.progressMetrics}
-          trendData={planData.trendData}
+          garminInsights={garminInsights}
         />
       )}
       {activeScreen === "setup" && (
@@ -188,9 +273,11 @@ export default function App() {
           planData={planData}
           saveStatus={saveStatus}
           storageMode={repository.mode}
+          stravaClientId={stravaClientId}
+          stravaStatus={stravaStatus}
+          onConnectStrava={connectStrava}
           onReset={resetPlanData}
           onSave={savePlanData}
-          onImportDemoGarmin={importDemoGarmin}
           onImportGarminBridgeFile={importGarminBridgeFile}
           onRefreshLiveWeather={refreshLiveWeather}
           onSendMagicLink={sendMagicLink}

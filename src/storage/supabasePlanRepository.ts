@@ -247,6 +247,9 @@ export class SupabasePlanRepository implements PlanRepository {
 
   private async getUserId(): Promise<string | null> {
     const { data, error } = await this.client.auth.getUser();
+    if (error?.message === "Auth session missing!") {
+      return null;
+    }
     this.throwIfError(error);
     return data.user?.id ?? null;
   }

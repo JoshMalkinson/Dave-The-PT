@@ -19,7 +19,7 @@ export function explainRecommendation(recommendation: DailyRecommendation): stri
   const copy = [
     `${recommendation.workout.title} is scheduled for ${recommendation.scheduledWindow}.`,
     reason,
-    `${riskCopy} Readiness is ${recommendation.readinessScore}%, with ${recommendation.daysUntilRace} days until race day.`,
+    `${riskCopy} Readiness is ${recommendation.readinessScore}%.`,
     "The engine is keeping the plan explainable and inside your recovery guardrails.",
   ].join(" ");
 

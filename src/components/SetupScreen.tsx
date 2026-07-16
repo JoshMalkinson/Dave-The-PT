@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
-import { CloudSun, FileUp, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
+import { CloudSun, FileUp, Moon, RotateCcw, Save, Watch } from "lucide-react";
 import type { AuthSessionState } from "../auth/supabaseAuthClient";
 import type { PlanData } from "../data/planData";
 import type { PlanRepositoryMode } from "../storage/planRepository";
 import { AuthPanel } from "./AuthPanel";
+import { StravaIntegrationPanel } from "./StravaIntegrationPanel";
 
 interface SetupScreenProps {
   authSession: AuthSessionState | null;
   planData: PlanData;
   saveStatus: string;
   storageMode: PlanRepositoryMode;
+  stravaClientId?: string;
+  stravaStatus: string;
   onReset: () => Promise<void>;
-  onImportDemoGarmin: () => Promise<void>;
+  onConnectStrava: () => void;
   onImportGarminBridgeFile: (file: File) => Promise<void>;
   onRefreshLiveWeather: (planData: PlanData) => Promise<void>;
   onSave: (planData: PlanData) => Promise<void>;
@@ -24,7 +27,9 @@ export function SetupScreen({
   planData,
   saveStatus,
   storageMode,
-  onImportDemoGarmin,
+  stravaClientId,
+  stravaStatus,
+  onConnectStrava,
   onImportGarminBridgeFile,
   onReset,
   onRefreshLiveWeather,
@@ -39,7 +44,6 @@ export function SetupScreen({
   }, [planData]);
 
   const athlete = draft.planInput.athlete;
-  const race = draft.planInput.race;
   const availability = draft.planInput.availability;
 
   async function importGarminBridgeFile(fileList: FileList | null) {
@@ -54,11 +58,11 @@ export function SetupScreen({
   return (
     <div className="screen-stack">
       <section className="screen-header">
-        <p className="eyebrow">Athlete Setup</p>
-        <h1>Setup</h1>
+        <p className="eyebrow">Data setup</p>
+        <h1>Data setup</h1>
         <p>
-          Tune the Garmin-style state and goal race, then save it to{" "}
-          {storageMode === "supabase" ? "Supabase" : "local demo storage"}.
+          Connect the data sources that drive the recommendation engine and save the current setup to{" "}
+          {storageMode === "supabase" ? "Supabase" : "local browser storage"}.
         </p>
       </section>
 
@@ -145,10 +149,6 @@ export function SetupScreen({
               </button>
             ))}
           </div>
-          <button type="button" className="secondary-action full-width-action" onClick={onImportDemoGarmin}>
-            <Watch size={18} aria-hidden="true" />
-            Import demo Garmin
-          </button>
           <label className="file-action full-width-action">
             <FileUp size={18} aria-hidden="true" />
             Import Garmin bridge
@@ -162,56 +162,6 @@ export function SetupScreen({
               }}
             />
           </label>
-        </article>
-
-        <article className="content-panel">
-          <div className="section-heading">
-            <Settings2 size={20} aria-hidden="true" />
-            <h2>Goal Race</h2>
-          </div>
-          <label className="text-control">
-            <span>Race name</span>
-            <input
-              aria-label="Race name"
-              value={race.name}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  planInput: {
-                    ...draft.planInput,
-                    race: { ...race, name: event.target.value },
-                  },
-                })
-              }
-            />
-          </label>
-          <label className="text-control">
-            <span>Race date</span>
-            <input
-              aria-label="Race date"
-              type="date"
-              value={race.date}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  planInput: {
-                    ...draft.planInput,
-                    race: { ...race, date: event.target.value },
-                  },
-                })
-              }
-            />
-          </label>
-          <dl className="detail-list compact">
-            <div>
-              <dt>Distance</dt>
-              <dd>{race.distance}</dd>
-            </div>
-            <div>
-              <dt>Priority</dt>
-              <dd>{race.priority} race</dd>
-            </div>
-          </dl>
         </article>
 
         <article className="content-panel availability-panel">
@@ -234,49 +184,16 @@ export function SetupScreen({
             <CloudSun size={20} aria-hidden="true" />
             <h2>Weather Integration</h2>
           </div>
-          <label className="text-control">
-            <span>Location name</span>
-            <input
-              aria-label="Location name"
-              value={draft.location.name}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  location: { ...draft.location, name: event.target.value },
-                })
-              }
-            />
-          </label>
-          <label className="text-control">
-            <span>Latitude</span>
-            <input
-              aria-label="Latitude"
-              type="number"
-              step="0.0001"
-              value={draft.location.latitude}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  location: { ...draft.location, latitude: Number(event.target.value) },
-                })
-              }
-            />
-          </label>
-          <label className="text-control">
-            <span>Longitude</span>
-            <input
-              aria-label="Longitude"
-              type="number"
-              step="0.0001"
-              value={draft.location.longitude}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  location: { ...draft.location, longitude: Number(event.target.value) },
-                })
-              }
-            />
-          </label>
+          <dl className="detail-list compact">
+            <div>
+              <dt>Weather location</dt>
+              <dd>{draft.location.name}</dd>
+            </div>
+            <div>
+              <dt>Timezone</dt>
+              <dd>{draft.location.timezone}</dd>
+            </div>
+          </dl>
           <button
             type="button"
             className="secondary-action full-width-action"
@@ -286,6 +203,13 @@ export function SetupScreen({
             Refresh live weather
           </button>
         </article>
+
+        <StravaIntegrationPanel
+          clientId={stravaClientId}
+          isSignedIn={Boolean(authSession?.isSignedIn)}
+          status={stravaStatus}
+          onConnect={onConnectStrava}
+        />
       </section>
 
       <section className="action-panel">
@@ -293,7 +217,7 @@ export function SetupScreen({
         <div className="action-row">
           <button type="button" className="secondary-action" onClick={onReset}>
             <RotateCcw size={18} aria-hidden="true" />
-            Reset demo
+            Reset local setup
           </button>
           <button type="button" className="primary-action" onClick={() => onSave(draft)}>
             <Save size={18} aria-hidden="true" />

@@ -11,8 +11,8 @@ const baseInput: TrainingPlanInput = {
     hardWorkoutsLastFiveDays: 1,
   },
   race: {
-    name: "Cape Town Half",
-    distance: "Half Marathon",
+    name: "Trailseeker MTB",
+    distance: "Mountain bike marathon",
     date: "2026-08-08",
     priority: "A",
   },
@@ -26,11 +26,11 @@ const baseInput: TrainingPlanInput = {
     Sunday: ["morning"],
   },
   workouts: [
-    { id: "easy", type: "easy", title: "Easy Run", day: "Monday", durationMinutes: 45, intensity: "easy" },
-    { id: "intervals", type: "intervals", title: "6 x 1 km Intervals", day: "Tuesday", durationMinutes: 60, intensity: "hard" },
+    { id: "easy", type: "easy", title: "Zone 2 Aerobic Spin", day: "Monday", durationMinutes: 45, intensity: "easy" },
+    { id: "intervals", type: "intervals", title: "Climb Threshold Repeats", day: "Tuesday", durationMinutes: 50, intensity: "hard" },
     { id: "strength", type: "strength", title: "Strength + Mobility", day: "Wednesday", durationMinutes: 40, intensity: "easy" },
-    { id: "tempo", type: "tempo", title: "Tempo Run", day: "Thursday", durationMinutes: 55, intensity: "moderate" },
-    { id: "long", type: "long", title: "Long Run", day: "Saturday", durationMinutes: 105, intensity: "moderate" },
+    { id: "tempo", type: "tempo", title: "Sweet-Spot Trail Tempo", day: "Thursday", durationMinutes: 55, intensity: "moderate" },
+    { id: "long", type: "long", title: "Endurance Trail Ride", day: "Saturday", durationMinutes: 55, intensity: "moderate" },
   ],
   weather: [
     { date: "2026-07-06", label: "Monday", morningTempC: 19, eveningTempC: 17, humidityPercent: 58, windKph: 8, rainProbabilityPercent: 10, thunderstormProbabilityPercent: 0, uvIndex: 4, sunrise: "06:43", sunset: "17:38" },
@@ -97,7 +97,7 @@ describe("buildAdaptiveWeek", () => {
     expect(tuesday?.reasons).toContain("Race is within 14 days, so intensity is capped.");
   });
 
-  it("places the long run on the best weekend weather day", () => {
+  it("places the long ride on the best weekend weather day", () => {
     const week = buildAdaptiveWeek({
       ...baseInput,
       weather: baseInput.weather.map((day) =>
@@ -111,6 +111,6 @@ describe("buildAdaptiveWeek", () => {
     const sunday = week.days.find((day) => day.label === "Sunday");
     expect(saturday?.workout.type).not.toBe("long");
     expect(sunday?.workout.id).toBe("long");
-    expect(sunday?.reasons).toContain("Long run moved to the better weekend weather window.");
+    expect(sunday?.reasons).toContain("Long ride moved to the better weekend weather window.");
   });
 });

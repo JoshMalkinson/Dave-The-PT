@@ -1,14 +1,15 @@
 # Dave The PT
 
-Dave The PT is a mobile-friendly adaptive running coach MVP. It combines athlete recovery state, race goals, weekly availability, weather, and Garmin-style metrics into a daily training recommendation.
+Dave The PT is a mobile-friendly adaptive mountain bike coaching MVP. It combines athlete recovery state, race goals, weekly availability, weather, and Garmin-style metrics into ride recommendations and watch-ready MTB workouts.
 
 ## Current MVP
 
 - React/Vite website with installable PWA metadata and an offline app shell.
-- Local demo mode that works without any cloud credentials.
+- Local browser mode that works without Supabase credentials.
 - Supabase schema, RLS policies, auth adapter, and signed-in plan persistence.
 - Open-Meteo weather refresh for live forecasts.
-- Garmin demo import mapper plus a local Garmin Connect bridge while official access is approval-gated.
+- Local Garmin Connect bridge while official Garmin access is approval-gated.
+- Strava OAuth scaffolding for importing ride history and rider-specific MTB targets.
 
 ## Run Locally
 
@@ -45,15 +46,18 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-## Demo Flow
+## Data Flow
 
 1. Open Home to review today's mission and coach explanation.
 2. Open Setup and adjust recovery, sleep, HRV, goal race, or location.
-3. Import demo Garmin metrics to update readiness.
-4. Import a local Garmin bridge JSON file for real Garmin-derived demo data.
-5. Refresh live weather to recalculate weather-aware recommendations.
-6. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
+3. Import a local Garmin bridge JSON file for Garmin-derived recovery and activity data.
+4. Refresh live weather to recalculate weather-aware recommendations.
+5. Connect Strava from Setup to import ride history for personalized distance, speed, and climbing targets.
+6. Open Plan to adjust the week's MTB workouts and sync them through the local Garmin bridge service.
+7. Save setup locally or, when Supabase is configured and signed in, save it to the user's Supabase rows.
 
 ## Garmin Bridge
 
 While Garmin developer approval is pending, use the local bridge in `tools/garmin_bridge_export.py` to generate `garmin-bridge-export.json` from a project-owned Garmin account. Use `--days 14` or another bounded window for richer Progress reporting. See `docs/garmin-bridge.md`.
+
+For workout sync, start `tools/garmin_workout_bridge_service.py` and use the Plan screen's `Sync week to Garmin` button. See `docs/garmin-workout-push.md`.

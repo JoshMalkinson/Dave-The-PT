@@ -12,18 +12,6 @@ export interface GarminDailyImport {
   restingHeartRate: number;
 }
 
-export const demoGarminDailyImport: GarminDailyImport = {
-  label: "Garmin",
-  recoveryScore: 76,
-  sleepSeconds: 26_400,
-  hrvStatus: "balanced",
-  hrvScore: 72,
-  hardWorkoutsLastFiveDays: 1,
-  weeklyLoad: 486,
-  vo2Max: 51.8,
-  restingHeartRate: 51,
-};
-
 function sleepHours(seconds: number): number {
   return Math.round((seconds / 3600) * 10) / 10;
 }
