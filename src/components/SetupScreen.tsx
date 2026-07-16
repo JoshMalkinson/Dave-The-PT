@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CloudSun, FileUp, Moon, RotateCcw, Save, Settings2, Watch } from "lucide-react";
+import { CloudSun, FileUp, Moon, RotateCcw, Save, Watch } from "lucide-react";
 import type { AuthSessionState } from "../auth/supabaseAuthClient";
 import type { PlanData } from "../data/planData";
 import type { PlanRepositoryMode } from "../storage/planRepository";
@@ -44,7 +44,6 @@ export function SetupScreen({
   }, [planData]);
 
   const athlete = draft.planInput.athlete;
-  const race = draft.planInput.race;
   const availability = draft.planInput.availability;
 
   async function importGarminBridgeFile(fileList: FileList | null) {
@@ -59,10 +58,10 @@ export function SetupScreen({
   return (
     <div className="screen-stack">
       <section className="screen-header">
-        <p className="eyebrow">Athlete Setup</p>
-        <h1>Setup</h1>
+        <p className="eyebrow">Data setup</p>
+        <h1>Data setup</h1>
         <p>
-          Import Garmin bridge data, refresh live weather, and save the current setup to{" "}
+          Connect the data sources that drive the recommendation engine and save the current setup to{" "}
           {storageMode === "supabase" ? "Supabase" : "local browser storage"}.
         </p>
       </section>
@@ -163,56 +162,6 @@ export function SetupScreen({
               }}
             />
           </label>
-        </article>
-
-        <article className="content-panel">
-          <div className="section-heading">
-            <Settings2 size={20} aria-hidden="true" />
-            <h2>Goal Race</h2>
-          </div>
-          <label className="text-control">
-            <span>Race name</span>
-            <input
-              aria-label="Race name"
-              value={race.name}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  planInput: {
-                    ...draft.planInput,
-                    race: { ...race, name: event.target.value },
-                  },
-                })
-              }
-            />
-          </label>
-          <label className="text-control">
-            <span>Race date</span>
-            <input
-              aria-label="Race date"
-              type="date"
-              value={race.date}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  planInput: {
-                    ...draft.planInput,
-                    race: { ...race, date: event.target.value },
-                  },
-                })
-              }
-            />
-          </label>
-          <dl className="detail-list compact">
-            <div>
-              <dt>Distance</dt>
-              <dd>{race.distance}</dd>
-            </div>
-            <div>
-              <dt>Priority</dt>
-              <dd>{race.priority} race</dd>
-            </div>
-          </dl>
         </article>
 
         <article className="content-panel availability-panel">

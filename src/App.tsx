@@ -257,7 +257,6 @@ export default function App() {
           dailyRecommendation={today}
           explanation={explanation}
           garminInsights={garminInsights}
-          race={planData.planInput.race}
           storageMode={repository.mode}
         />
       )}

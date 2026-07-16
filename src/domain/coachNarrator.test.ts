@@ -53,6 +53,13 @@ describe("explainRecommendation", () => {
     expect(copy).toContain("Moved to evening for safer heat conditions.");
   });
 
+  it("keeps target race countdown out of the product surface", () => {
+    const copy = explainRecommendation(recommendation);
+
+    expect(copy).not.toContain("race day");
+    expect(copy).not.toContain("31 days");
+  });
+
   it("does not claim the model changed the workout", () => {
     const copy = explainRecommendation(recommendation);
 

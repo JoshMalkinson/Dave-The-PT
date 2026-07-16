@@ -1,8 +1,8 @@
 :root {
   color: #10231f;
-  background: #f6f5ef;
+  background: #f7f8f5;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Aptos, "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     sans-serif;
 }
 
@@ -14,9 +14,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    linear-gradient(135deg, rgba(246, 245, 239, 0.98), rgba(225, 235, 231, 0.98)),
-    linear-gradient(160deg, rgba(135, 179, 141, 0.22), rgba(244, 184, 96, 0.12));
+  background: #f7f8f5;
   background-attachment: fixed;
   background-position: center;
   background-size: cover;
@@ -63,14 +61,13 @@ p {
 }
 
 .brand-mark {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   color: #f6f5ef;
   background: #10231f;
-  box-shadow: 0 12px 32px rgba(16, 35, 31, 0.2);
 }
 
 .brand-subtitle,
@@ -97,7 +94,7 @@ p {
   border: 1px solid rgba(16, 35, 31, 0.12);
   border-radius: 999px;
   color: #29433a;
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
   font-size: 0.86rem;
   font-weight: 800;
 }
@@ -120,42 +117,36 @@ p {
 .metric-tile {
   border: 1px solid rgba(16, 35, 31, 0.12);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 20px 55px rgba(16, 35, 31, 0.11);
-  backdrop-filter: blur(16px);
+  background: #ffffff;
 }
 
 .hero-panel {
-  min-height: 270px;
-  padding: 30px;
+  min-height: 0;
+  padding: 24px;
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: end;
+  align-items: center;
   gap: 24px;
-  color: #f6f5ef;
-  background:
-    linear-gradient(135deg, rgba(16, 35, 31, 0.96), rgba(54, 83, 75, 0.9)),
-    linear-gradient(160deg, rgba(244, 184, 96, 0.28), rgba(135, 179, 141, 0.2));
-  background-position: center;
-  background-size: cover;
+  color: #10231f;
+  background: #ffffff;
 }
 
 .hero-panel .eyebrow {
-  color: #f4b860;
+  color: #58756b;
 }
 
 .hero-panel h1,
 .screen-header h1 {
   margin: 8px 0 0;
-  font-size: clamp(2.2rem, 6vw, 4.6rem);
-  line-height: 0.96;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1;
   letter-spacing: 0;
 }
 
 .mission-title {
-  margin: 16px 0 0;
-  color: #f4b860;
-  font-size: clamp(1.2rem, 3vw, 2rem);
+  margin: 12px 0 0;
+  color: #10231f;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
   line-height: 1.12;
 }
 
@@ -172,8 +163,8 @@ p {
 
 .hero-summary {
   max-width: 44rem;
-  color: #dfe9e4;
-  font-size: 1.05rem;
+  color: #49635b;
+  font-size: 0.98rem;
 }
 
 .storage-status {
@@ -188,14 +179,14 @@ p {
 }
 
 .readiness-dial {
-  width: 132px;
+  width: 112px;
   aspect-ratio: 1;
-  border: 10px solid rgba(244, 184, 96, 0.95);
+  border: 8px solid #87b38d;
   border-radius: 50%;
   display: grid;
   place-items: center;
   text-align: center;
-  background: rgba(246, 245, 239, 0.1);
+  background: #f7f8f5;
 }
 
 .readiness-dial span {
@@ -217,7 +208,7 @@ p {
 .progress-grid,
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -227,8 +218,8 @@ p {
 
 .metric-tile,
 .progress-card {
-  min-height: 132px;
-  padding: 18px;
+  min-height: 112px;
+  padding: 16px;
   display: grid;
   align-content: space-between;
 }
@@ -247,13 +238,13 @@ p {
 
 .metric-tile strong,
 .progress-card strong {
-  font-size: 1.35rem;
+  font-size: 1.22rem;
   text-transform: capitalize;
 }
 
 .content-panel,
 .screen-header {
-  padding: 24px;
+  padding: 22px;
 }
 
 .section-heading {
@@ -344,9 +335,7 @@ p {
   padding: 18px;
   display: grid;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 20px 55px rgba(16, 35, 31, 0.11);
-  backdrop-filter: blur(16px);
+  background: #ffffff;
 }
 
 .planner-heading {
@@ -379,7 +368,7 @@ p {
 }
 
 .workout-tab {
-  min-height: 118px;
+  min-height: 104px;
   border: 1px solid rgba(16, 35, 31, 0.12);
   border-radius: 8px;
   padding: 12px;
@@ -388,7 +377,7 @@ p {
   gap: 7px;
   text-align: left;
   color: #29433a;
-  background: rgba(246, 245, 239, 0.76);
+  background: #f7f8f5;
 }
 
 .workout-tab.selected {
@@ -429,7 +418,7 @@ p {
   border: 1px solid rgba(16, 35, 31, 0.1);
   border-radius: 8px;
   padding: 16px;
-  background: rgba(246, 245, 239, 0.72);
+  background: #f7f8f5;
 }
 
 .workout-summary p,
@@ -454,7 +443,7 @@ p {
   align-items: center;
   gap: 7px;
   color: #10231f;
-  background: #f4b860;
+  background: #e3ece7;
   font-weight: 900;
 }
 
@@ -474,7 +463,7 @@ p {
   border-radius: 8px;
   padding: 12px;
   overflow-x: auto;
-  color: #dfe9e4;
+  color: #49635b;
   background: #10231f;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.82rem;
@@ -580,10 +569,6 @@ p {
 
 .activity-list strong {
   color: #10231f;
-}
-
-.settings-grid {
-  grid-template-columns: 1.1fr 0.9fr 1fr;
 }
 
 .integration-panel {
@@ -751,7 +736,7 @@ p {
   padding: 18px;
   border: 1px solid rgba(16, 35, 31, 0.12);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.84);
+  background: #ffffff;
 }
 
 .action-panel p {

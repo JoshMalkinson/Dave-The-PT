@@ -1,5 +1,5 @@
-import { Clock, CloudSun, Flag, Gauge, Route } from "lucide-react";
-import type { AthleteState, DailyRecommendation, RaceGoal } from "../domain/types";
+import { Clock, CloudSun, Gauge, Route } from "lucide-react";
+import type { AthleteState, DailyRecommendation } from "../domain/types";
 import type { GarminInsight } from "../integrations/garmin/garminReport";
 import type { PlanRepositoryMode } from "../storage/planRepository";
 
@@ -8,7 +8,6 @@ interface HomeScreenProps {
   dailyRecommendation: DailyRecommendation;
   explanation: string;
   garminInsights: GarminInsight[];
-  race: RaceGoal;
   storageMode: PlanRepositoryMode;
 }
 
@@ -25,15 +24,14 @@ export function HomeScreen({
   dailyRecommendation,
   explanation,
   garminInsights,
-  race,
   storageMode,
 }: HomeScreenProps) {
   return (
     <div className="screen-stack">
       <section className="hero-panel" aria-labelledby="mission-heading">
         <div className="hero-copy">
-          <p className="eyebrow">Today's Mission</p>
-          <h1 id="mission-heading">Today's Mission</h1>
+          <p className="eyebrow">Data Console</p>
+          <h1 id="mission-heading">Today</h1>
           <h2 className="mission-title">{dailyRecommendation.workout.title}</h2>
           <p className="storage-status">
             {storageMode === "supabase" ? "Supabase ready" : "Local browser storage"}
@@ -61,11 +59,6 @@ export function HomeScreen({
           <strong>{dailyRecommendation.weatherScore.level}</strong>
         </article>
         <article className="metric-tile">
-          <Flag size={20} aria-hidden="true" />
-          <span>{race.name}</span>
-          <strong>{dailyRecommendation.daysUntilRace} days</strong>
-        </article>
-        <article className="metric-tile">
           <Clock size={20} aria-hidden="true" />
           <span>Window</span>
           <strong>{dailyRecommendation.scheduledWindow}</strong>
@@ -75,7 +68,7 @@ export function HomeScreen({
       <section className="content-panel">
         <div className="section-heading">
           <Route size={20} aria-hidden="true" />
-          <h2>Coach's Explanation</h2>
+          <h2>Decision factors</h2>
         </div>
         <p className="coach-copy">{explanation}</p>
         <div className="reason-list">

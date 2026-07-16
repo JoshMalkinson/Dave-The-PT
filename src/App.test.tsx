@@ -12,10 +12,9 @@ describe("App", () => {
   it("renders the home dashboard by default", () => {
     render(<App />);
 
-    expect(
-      screen.getByRole("heading", { name: "Today's Mission" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Coach's Explanation")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
+    expect(screen.getByText("Decision factors")).toBeInTheDocument();
+    expect(screen.queryByText("Trailseeker MTB")).not.toBeInTheDocument();
   });
 
   it("navigates between the four MVP screens", async () => {
@@ -29,10 +28,10 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Progress" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Setup" }));
-    expect(screen.getByRole("heading", { name: "Setup" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Data setup" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Home" }));
-    expect(screen.getByRole("heading", { name: "Today's Mission" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
   });
 
   it("saves setup edits and recalculates the visible readiness", async () => {
@@ -40,14 +39,25 @@ describe("App", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Setup" }));
-    await user.clear(screen.getByLabelText("Race name"));
-    await user.type(screen.getByLabelText("Race name"), "Joburg 10K");
     await user.click(screen.getByRole("button", { name: "Low HRV" }));
     await user.click(screen.getByRole("button", { name: "Save setup" }));
     await user.click(screen.getByRole("button", { name: "Home" }));
 
-    expect(screen.getByText("Joburg 10K")).toBeInTheDocument();
     expect(screen.getByText("low")).toBeInTheDocument();
+  });
+
+  it("keeps setup focused on data inputs instead of target race fields", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+
+    expect(screen.getByRole("heading", { name: "Data setup" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Garmin State" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Strava Ride History" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Goal Race" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Race name")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Race date")).not.toBeInTheDocument();
   });
 
   it("imports Garmin bridge JSON into the dashboard", async () => {

@@ -9,11 +9,11 @@ export function PlanScreen({ week }: PlanScreenProps) {
   return (
     <div className="screen-stack">
       <section className="screen-header">
-        <p className="eyebrow">Dynamic Calendar</p>
+        <p className="eyebrow">Workout sync</p>
         <h1>Adaptive Week</h1>
         <p>
-          The engine fits the required mountain bike workouts into the best available
-          windows, then exports the week for daily Garmin watch sync.
+          Review each data-driven MTB workout, adjust the structure, then sync the
+          selected week to Garmin.
         </p>
       </section>
 
