@@ -1,7 +1,7 @@
 {
   "name": "Dave The PT",
   "short_name": "Dave PT",
-  "description": "A Garmin and weather-aware adaptive running coach.",
+  "description": "A Garmin and weather-aware adaptive mountain bike coach.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

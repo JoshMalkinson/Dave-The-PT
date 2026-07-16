@@ -229,6 +229,10 @@ export default function App() {
   }
 
   function connectStrava() {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setStravaStatus("Configure Supabase before connecting Strava.");
+      return;
+    }
     if (!stravaClientId) {
       setStravaStatus("Set VITE_STRAVA_CLIENT_ID after creating a Strava API app.");
       return;

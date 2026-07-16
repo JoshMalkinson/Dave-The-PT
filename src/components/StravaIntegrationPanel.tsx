@@ -14,7 +14,6 @@ export function StravaIntegrationPanel({
   onConnect,
 }: StravaIntegrationPanelProps) {
   const isConfigured = Boolean(clientId);
-  const canConnect = isConfigured && isSignedIn;
 
   return (
     <article className="content-panel integration-panel">
@@ -44,7 +43,6 @@ export function StravaIntegrationPanel({
       <button
         type="button"
         className="primary-action full-width-action"
-        disabled={!canConnect}
         onClick={onConnect}
       >
         <ExternalLink size={18} aria-hidden="true" />

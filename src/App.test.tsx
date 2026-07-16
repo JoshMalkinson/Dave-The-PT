@@ -172,4 +172,14 @@ describe("App", () => {
     expect(screen.queryByLabelText("Latitude")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Longitude")).not.toBeInTheDocument();
   });
+
+  it("explains why Strava cannot connect before Supabase is configured", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Setup" }));
+    await user.click(screen.getByRole("button", { name: "Connect Strava" }));
+
+    expect(screen.getByText("Configure Supabase before connecting Strava.")).toBeInTheDocument();
+  });
 });

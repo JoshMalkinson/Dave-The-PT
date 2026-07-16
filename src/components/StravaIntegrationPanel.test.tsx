@@ -17,17 +17,21 @@ describe("StravaIntegrationPanel", () => {
     expect(screen.getByText(/VITE_STRAVA_CLIENT_ID/)).toBeInTheDocument();
   });
 
-  it("requires Supabase sign-in before Strava connect", () => {
+  it("explains Supabase sign-in before Strava connect", async () => {
+    const user = userEvent.setup();
+    const onConnect = vi.fn();
     render(
       <StravaIntegrationPanel
         clientId="123"
         isSignedIn={false}
         status=""
-        onConnect={vi.fn()}
+        onConnect={onConnect}
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Connect Strava" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Connect Strava" }));
+
+    expect(onConnect).toHaveBeenCalled();
     expect(screen.getByText(/Sign into Supabase/)).toBeInTheDocument();
   });
 
